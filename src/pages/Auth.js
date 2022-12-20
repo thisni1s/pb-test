@@ -9,9 +9,6 @@ function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loggedIn, setLoggedIn] = useState(false)
-  //const location = useLocation()
-  //const { pb } = location.state
-
   const pb = new PocketBase('https://base.jn2p.de');
   const navigate = useNavigate()
 

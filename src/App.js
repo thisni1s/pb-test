@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Auth from './pages/Auth'
 import { Navigate } from "react-router-dom";
 import Profile from "./pages/Profile";
+import NewEntry from "./pages/NewEntry";
 
 function App() {
 
@@ -17,6 +18,7 @@ function App() {
         <Route path="/home" element={<Home state={{pb: pb}} />} />
         <Route path="/auth" element={<Auth state={{pb: pb}} />} />
         <Route path="/profile" element={<Profile state={{pb: pb}} />} />
+        <Route path="/newEntry" element={<NewEntry state={{pb: pb}} />} />
     </Routes>
   </BrowserRouter>
   );
