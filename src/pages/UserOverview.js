@@ -5,46 +5,67 @@ import PocketBase from 'pocketbase';
 import { Tabs, Tab, Container, List, ListItem, ListItemText, ListItemAvatar, Avatar, Typography, Divider, LinearProgress, IconButton } from '@mui/material';
 import moment from 'moment';
 
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import DeleteIcon from '@mui/icons-material/Delete';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
-export default function Home() {
+export default function UserOverview() {
   const pb = new PocketBase('https://base.jn2p.de');
   const navigate = useNavigate()
   const [entries, setEntries] = useState([])
   const [wtime, setWtime] = useState({val: 0, unit: 'day', worked: 0})
   useEffect(() => {
-    async function getWorkEntries() {
-      console.log('Call me maybe')
+    async function getUsersWithHours() {
+      await getWorkTime()
       try {
-        const records = await pb.collection('work_entries').getFullList(10, {
+        const users = await pb.collection('users').getFullList(200, {
           sort: '-created',
-          filter: 'user="'+pb.authStore.model.id+'"',
         });
-        setEntries(records)
+        console.log('got users')
+        let usertimes = []
+        let timescale = moment().subtract(wtime.val, wtime.unit)
+        timescale = timescale.format('YYYY-MM-DD hh:mm:ss')
+
+        for (let i = 0; i < users.length; i++) {
+          if (users[i].id !== pb.authStore.model.id){
+
+          const records = await pb.collection('work_entries').getFullList(100, {
+            sort: '-created',
+            filter: 'created >= "'+timescale+'" && user="'+users[i].id+'"',
+          });
+          console.log('got times for user: ', users[i].username)
+          let time = 0
+          records.forEach(element => {
+            console.log('time: '+element.duration_min)
+            time = time+element.duration_min
+          });
+          usertimes = [
+            ...usertimes,
+            {
+              id: users[i].id,
+              username: users[i].username,
+              time: time,
+            }
+          ]
+        }
+        }
+        setEntries(usertimes)      
       } catch (error) {
         console.log(error)
       }      
-    }  
-
-    getWorkEntries()
-    getWorkTime()
+    } 
+    getUsersWithHours()
+    
   }, [])
 
   async function getWorkTime() {
-    console.log('Call me maybe2')
     try {
       const record = await pb.collection('time_setting').getFirstListItem('user="'+pb.authStore.model.id+'"', {
         expand: 'relField1,relField2.subRelField',
       })
-      console.log('1')
       let time = moment().subtract(record.time_val, record.unit)
       time = time.format('YYYY-MM-DD hh:mm:ss')
-      console.log('2')
       const record2 = await pb.collection('work_entries').getFullList(100, {
         filter: 'created >= "'+time+'" && user="'+pb.authStore.model.id+'"',
       });
-      console.log('3')
       let minutes = 0
       record2.forEach(element => {
         minutes = minutes + element.duration_min
@@ -64,18 +85,6 @@ export default function Home() {
       }
     }
 
-    async function deleteEntry(id) {
-      try {
-        await pb.collection('work_entries').delete(id);
-        const newEntries = entries.filter(e => e.id !== id)
-        setEntries(newEntries)
-        await getWorkTime()
-      } catch (error) {
-        console.log(error)
-      }
-      
-    }
-
     const handleChange = (event, newValue) => {
       console.log('nw: '+newValue)
       switch(newValue) {
@@ -84,9 +93,6 @@ export default function Home() {
           break
         case 0:
           navigate('/newEntry')
-          break
-        case 3:
-          navigate('/userOverview')
           break
         default:
           break
@@ -100,27 +106,20 @@ export default function Home() {
             <ListItem
               key={entry.id}
               alignItems='flex-start'
-              secondaryAction={
-                <IconButton
-                 aria-label="delete"
-                 onClick={() => deleteEntry(entry.id)}
-                >
-                  <DeleteIcon />
-                </IconButton>
-              }
+              
             >
               <ListItemAvatar>
-              <Avatar>
-              <AssignmentIcon />
-              </Avatar>
+                <Avatar>
+                  <AccountCircleIcon  />
+                </Avatar>
               </ListItemAvatar>
               <ListItemText
-                primary={entry.duration_min+' mins'} 
-                secondary={entry.description}
+                primary={entry.username} 
+                secondary={sanitizeTime(entry.time)+' this '+wtime.unit.substring(0, wtime.unit.length-1)}
               />
               
             </ListItem>
-            <Divider variant="inset" component="li" />
+            <LinearProgress variant="determinate" value={(entry.time / wtime.val)*100} />
             </>
           )
         } else {
@@ -133,7 +132,7 @@ export default function Home() {
 
     return(
     <Container component="main" sx={{width: '100%', bgcolor: 'background.paper'}}>
-      <Tabs value={1} onChange={handleChange} centered>
+      <Tabs value={3} onChange={handleChange} centered>
         <Tab label="New Entry" />
         <Tab label="Home" />
         <Tab label="Profile" />
@@ -148,7 +147,7 @@ export default function Home() {
           Already worked: {sanitizeTime(wtime.worked)} in the last {wtime.unit.substring(0, wtime.unit.length - 1)}
         </Typography>
         <Typography variant="h6" gutterBottom sx={{mt: 3}}>
-          Your last entries:
+          Other users:
         </Typography>
         <List>
           {listEntries}
