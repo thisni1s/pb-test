@@ -33,7 +33,7 @@ function Auth() {
       if (firstTime) {
         const data = {
           "user": pb.authStore.model.id,
-          "time_val": 720,
+          "time_val": 240,
           "unit": "months"
         };
         const record = await pb.collection('time_setting').create(data);

@@ -38,7 +38,9 @@ export default function Home() {
         expand: 'relField1,relField2.subRelField',
       })
       console.log('1')
-      let time = moment().subtract(record.time_val, record.unit)
+      //during the last month week day
+      //let time = moment().subtract(record.time_val, record.unit)
+      let time = moment().startOf(record.unit.substring(0, record.unit.length))
       time = time.format('YYYY-MM-DD hh:mm:ss')
       console.log('2')
       const record2 = await pb.collection('work_entries').getFullList(100, {
@@ -115,7 +117,7 @@ export default function Home() {
               </Avatar>
               </ListItemAvatar>
               <ListItemText
-                primary={entry.duration_min+' mins'} 
+                primary={entry.duration_min+' mins @ '+moment(entry.created).format('DD.MM.YYYY')} 
                 secondary={entry.description}
               />
               
@@ -145,7 +147,7 @@ export default function Home() {
         </Typography>
         <LinearProgress variant="determinate" value={(wtime.worked / wtime.val)*100} />
         <Typography variant="caption" gutterBottom>
-          Already worked: {sanitizeTime(wtime.worked)} in the last {wtime.unit.substring(0, wtime.unit.length - 1)}
+          Already worked: {sanitizeTime(wtime.worked)} in this {wtime.unit.substring(0, wtime.unit.length - 1)}
         </Typography>
         <Typography variant="h6" gutterBottom sx={{mt: 3}}>
           Your last entries:
