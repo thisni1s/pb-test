@@ -9,6 +9,7 @@ import NewEntry from "./pages/NewEntry";
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import UserOverview from "./pages/UserOverview";
+import { GlobulContextProvider } from './GlobulContext';
 
 function App() {
 
@@ -21,6 +22,7 @@ function App() {
   });
 
   return (
+    <GlobulContextProvider>
     <ThemeProvider theme={darkTheme}>
     <CssBaseline />
     <BrowserRouter>
@@ -34,6 +36,7 @@ function App() {
     </Routes>
   </BrowserRouter>
   </ThemeProvider>
+  </GlobulContextProvider>
   );
 }
 

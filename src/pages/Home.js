@@ -2,17 +2,21 @@ import { useState, useEffect, Fragment } from 'react'
 import './App.css';
 import { useNavigate } from 'react-router-dom';
 import PocketBase from 'pocketbase';
-import { Tabs, Tab, Container, List, ListItem, ListItemText, ListItemAvatar, Avatar, Typography, Divider, LinearProgress, IconButton } from '@mui/material';
+import { Fab, Tabs, Tab, Container, List, ListItem, ListItemText, ListItemAvatar, Avatar, Typography, Divider, LinearProgress, IconButton } from '@mui/material';
 import moment from 'moment';
 
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+
+import {useGlobulContext, useUpdateGlobulContext} from '../GlobulContext'
 
 export default function Home() {
   const pb = new PocketBase('https://base.jn2p.de');
   const navigate = useNavigate()
   const [entries, setEntries] = useState([])
   const [wtime, setWtime] = useState({val: 0, unit: 'day', worked: 0})
+  const globulstate = useGlobulContext()
   useEffect(() => {
     async function getWorkEntries() {
       console.log('Call me maybe')
@@ -29,7 +33,14 @@ export default function Home() {
 
     getWorkEntries()
     getWorkTime()
+    test()
   }, [])
+
+  function test() {
+    console.log(globulstate.globulContext)
+    globulstate.updateContext({hello: true})
+    console.log(globulstate.globulContext)
+  }
 
   async function getWorkTime() {
     console.log('Call me maybe2')
@@ -141,7 +152,7 @@ export default function Home() {
         <Tab label="Profile" />
         <Tab label="Others" />
       </Tabs>
-      <Container>
+      <Container sx={{outlineWidth: '3pt', outlineColor: 'yellow'}}>
       <Typography variant="h5" gutterBottom>
           Your goal: {sanitizeTime(wtime.val)} per {wtime.unit.substring(0, wtime.unit.length - 1)}
         </Typography>
@@ -156,6 +167,9 @@ export default function Home() {
           {listEntries}
         </List>
       </Container>
+      <Fab color="primary" aria-label="add" /*sx={{ position: 'absolute',  bottom: 16,  right: 16,}}*/ sx={{float: 'right'}}>
+        <AddIcon />
+      </Fab>
     </Container>
     )
 
