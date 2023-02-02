@@ -2,21 +2,25 @@ import { useState, useEffect, Fragment } from 'react'
 import './App.css';
 import { useNavigate } from 'react-router-dom';
 import PocketBase from 'pocketbase';
-import { Fab, Tabs, Tab, Container, List, ListItem, ListItemText, ListItemAvatar, Avatar, Typography, Divider, LinearProgress, IconButton } from '@mui/material';
+import { TextField, Card, CardActions, CardContent, AppBar, Fab, Tabs, Tab, Container, List, ListItem, ListItemText, ListItemAvatar, Avatar, Typography, Divider, LinearProgress, IconButton, Toolbar, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText, BottomNavigation, BottomNavigationAction } from '@mui/material';
 import moment from 'moment';
+import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import CheckIcon from '@mui/icons-material/Check';
+import HistoryIcon from '@mui/icons-material/History';
+import InventoryIcon from '@mui/icons-material/Inventory';
 
 import {useGlobulContext, useUpdateGlobulContext} from '../GlobulContext'
+import { Stack } from '@mui/system';
 
 export default function Home() {
   const pb = new PocketBase('https://base.jn2p.de');
   const navigate = useNavigate()
   const [entries, setEntries] = useState([])
   const [wtime, setWtime] = useState({val: 0, unit: 'day', worked: 0})
-  const globulstate = useGlobulContext()
   useEffect(() => {
     async function getWorkEntries() {
       console.log('Call me maybe')
@@ -33,14 +37,23 @@ export default function Home() {
 
     getWorkEntries()
     getWorkTime()
-    test()
   }, [])
 
-  function test() {
-    console.log(globulstate.globulContext)
-    globulstate.updateContext({hello: true})
-    console.log(globulstate.globulContext)
-  }
+  const test_tasks = [
+    {
+      title: 'do stuff',
+      description: 'do some very long stuff with the stuff and the stuff',
+      by: 'Nils',
+      claimed: '',
+    },
+    {
+      title: 'do stuff',
+      description: 'do some very long stuff with the stuff and the stuff',
+      by: 'nini',
+      claimed: 'Peter',
+    }
+  ]
+  const [tasks, setTasks] = useState(test_tasks)
 
   async function getWorkTime() {
     console.log('Call me maybe2')
@@ -141,36 +154,109 @@ export default function Home() {
         }
       })
   
+    const TaskCard = props => {
+      const task = props.task
+      const [dialog, setDialog] = useState(false)
+      const [delDia, setDelDia] = useState(false)
+      const [duration, setDuration] = useState(0)
+      return (
+        <Grid xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h5" component="div">
+                {task.title}
+              </Typography>
+              <Typography variant="body2">
+                {task.description}
+              </Typography>
+              <Typography color="text.secondary" variant="caption" gutterBottom>
+                By: {task.by}
+              </Typography>
+              <Stack direction="row" spacing={2} sx={{display: 'flex', mt: 1}}>
+                {
+                  task.claimed.length > 0 ? <Button diabled variant='outlined' size='small' sx={{flexGrow: 1, borderColor: 'GrayText', color: 'GrayText'}}>{task.claimed}</Button> : <Button variant='outlined' size='small' sx={{flexGrow: 1}}><AddIcon fontSize="small"/></Button>
+                }                
+                <Button variant='outlined' size='small' sx={{flexGrow: 1}} onClick={() => setDialog(true)}><CheckIcon fontSize="small"/></Button>
+                {
+                  task.by === pb.authStore.model.username ? <IconButton aria-label="delete" size="small" onClick={() => setDelDia(true)}><DeleteIcon fontSize="small"/></IconButton> : <></>
+                }
+              </Stack>
+              <Dialog open={dialog} onClose={() => setDialog(false)}>
+                <DialogTitle>
+                {task.title}
+                </DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    Aufgabe als Erledigt markieren?
+                  </DialogContentText>
+                <TextField
+                  type="number"
+                  placeholder="0"
+                  label="Arbeitszeit (Minuten)"
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  sx={{mb: 1, mt: 2}}
+                />
+                <DialogActions>
+                  <Button variant='outlined' size='small' sx={{flexGrow: 1}} onClick={() => setDialog(false)}>Abbrechen</Button>               
+                  <Button variant='outlined' size='small' sx={{flexGrow: 1}} onClick={() => setDialog(false)}>Speichern</Button>
+                </DialogActions>
+                </DialogContent>
+              </Dialog>
+              <Dialog open={delDia} onClose={() => setDelDia(false)}>
+                <DialogTitle>Delete {task.title} ?</DialogTitle>
+                <DialogActions>
+                  <Button variant='outlined' size='small' sx={{flexGrow: 1}} onClick={() => setDelDia(false)}>Löschen</Button>               
+                  <Button variant='outlined' size='small' sx={{flexGrow: 1}} onClick={() => {console.log('hello'); setDelDia(false); console.log(delDia)}}>Abbrechen</Button>
+                </DialogActions>
+              </Dialog>          
+            </CardContent>
+          </Card>
+        </Grid>
+      )
 
+    }
 
 
     return(
-    <Container component="main" sx={{width: '100%', bgcolor: 'background.paper'}}>
-      <Tabs value={1} onChange={handleChange} centered>
-        <Tab label="New Entry" />
-        <Tab label="Home" />
-        <Tab label="Profile" />
-        <Tab label="Others" />
-      </Tabs>
-      <Container sx={{outlineWidth: '3pt', outlineColor: 'yellow'}}>
-      <Typography variant="h5" gutterBottom>
-          Your goal: {sanitizeTime(wtime.val)} per {wtime.unit.substring(0, wtime.unit.length - 1)}
+    <>
+    <AppBar position="static">
+      <Toolbar>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1, ml: 2 }}>
+          Simple Time
         </Typography>
-        <LinearProgress variant="determinate" value={(wtime.worked / wtime.val)*100} />
-        <Typography variant="caption" gutterBottom>
-          Already worked: {sanitizeTime(wtime.worked)} in this {wtime.unit.substring(0, wtime.unit.length - 1)}
-        </Typography>
-        <Typography variant="h6" gutterBottom sx={{mt: 3}}>
-          Your last entries:
-        </Typography>
-        <List>
-          {listEntries}
-        </List>
-      </Container>
-      <Fab color="primary" aria-label="add" /*sx={{ position: 'absolute',  bottom: 16,  right: 16,}}*/ sx={{float: 'right'}}>
+        <IconButton><Avatar>{Array.from(pb.authStore.model.username)[0]}</Avatar></IconButton>
+      </Toolbar>        
+    </AppBar>
+    <Container component="main" sx={{flexGrow: 1}}>
+      <Stack spacing={1} sx={{mt: 2}}>
+        <Container>
+          <LinearProgress variant="determinate" value={(wtime.worked / wtime.val)*100} />
+          <Typography variant="caption" gutterBottom>
+            Worked: {sanitizeTime(wtime.worked)} of {sanitizeTime(wtime.val)} this month
+          </Typography>
+        </Container>
+        <Grid container spacing={2}>
+          {tasks.map(task => {
+            return <TaskCard task={task}/>
+          })}
+        </Grid>
+      </Stack>      
+      <Fab color="primary" aria-label="add" sx={{ position: 'absolute',  bottom: 60,  right: 20,}}>
         <AddIcon />
       </Fab>
     </Container>
+    {/*<Tabs value={0} onChange={handleChange} sx={{ position: 'absolute', bottom: 0}} centered>
+        <Tab label="Home" />
+        <Tab label="History" />
+        </Tabs>*/}
+    <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
+      <BottomNavigation value={0} onChange={handleChange}>
+        <BottomNavigationAction label="Home" icon={<InventoryIcon />} />
+        <BottomNavigationAction label="History" icon={<HistoryIcon />} />      
+      </BottomNavigation>
+    </Paper>
+    </>
     )
 
 
