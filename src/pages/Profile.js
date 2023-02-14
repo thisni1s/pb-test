@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import './App.css';
 import PocketBase from 'pocketbase';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, Tab, Container, List, ListItem, ListItemText, ListItemAvatar, Avatar, Typography, Divider, LinearProgress, IconButton, Box, TextField, Button } from '@mui/material';

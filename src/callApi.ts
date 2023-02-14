@@ -1,9 +1,11 @@
-export const METHOD_GET = 'GET';
-export const METHOD_PUT = 'PUT';
-export const METHOD_DELETE = 'DELETE';
-export const METHOD_PATCH = 'PATCH';
+export enum HTTP_METHOD {
+  GET = 'GET',
+  PUT = 'PUT',
+  DELETE = 'DELETE',
+  PATHC = 'PATCH',
+} 
 
-export async function apicallPost(url, body) {
+export async function apicallPost(url: string, body: object) {
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -27,7 +29,7 @@ export async function apicallPost(url, body) {
   }
 }
 
-export async function apicallGet(method, url, token) {
+export async function apicallGet(method: HTTP_METHOD, url: string, token: string) {
   try {
     const response = await fetch(url, {
       method: method,

@@ -3,12 +3,11 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import PocketBase from 'pocketbase';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
+import History from './pages/History';
 import { Navigate } from 'react-router-dom';
 import Profile from './pages/Profile';
-import NewEntry from './pages/NewEntry';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import UserOverview from './pages/UserOverview';
 
 function App() {
 
@@ -25,12 +24,11 @@ function App() {
       <CssBaseline />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<AuthTest pb={pb} />} />
-          <Route path="/home" element={<Home state={{pb: pb}} />} />
-          <Route path="/auth" element={<Auth state={{pb: pb}} />} />
-          <Route path="/profile" element={<Profile state={{pb: pb}} />} />
-          <Route path="/newEntry" element={<NewEntry state={{pb: pb}} />} />
-          <Route path="/userOverview" element={<UserOverview state={{pb: pb}} />} />
+          <Route path='/' element={<AuthTest pb={pb} />} />
+          <Route path='/home' element={<Home state={{pb: pb}} />} />
+          <Route path='/auth' element={<Auth state={{pb: pb}} />} />
+          <Route path='/profile' element={<Profile state={{pb: pb}} />} />
+          <Route path='/history' element={<History state={{pb: pb}} />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
@@ -41,7 +39,7 @@ function App() {
 export function AuthTest({ pb }) {
   return(
     <>
-      {pb.authStore.isValid ? <Navigate to="/home" state={{pb: pb}}/> : <Navigate to="/auth" state={{pb: pb}}/>}
+      {pb.authStore.isValid ? <Navigate to='/home' state={{pb: pb}}/> : <Navigate to='/auth' state={{pb: pb}}/>}
     </>
   );
 }
