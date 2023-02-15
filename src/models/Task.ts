@@ -1,4 +1,3 @@
-import { Task } from "@mui/icons-material"
 import { Record } from "pocketbase"
 
 export type Task = {
@@ -6,17 +5,17 @@ export type Task = {
     title: string,
     description: string,
     creator: string,
-    claimed: string,
+    claimed: string[],
     spend_minutes: number | string,
 }
 
-export function taskFromRecord(record: Record): Task {
+export function taskFromRecord(record: any): Task {
     return {
-        id: record.id,
-        title: record.title,
-        description: record.description,
-        creator: record.creator,
-        claimed: record.claimed,
-        spend_minutes: record.spend_minutes,
+        id: record.id || '',
+        title: record.title || '',
+        description: record.description || '',
+        creator: record.creator || '',
+        claimed: record.claimed || [],
+        spend_minutes: record.spend_minutes || 0,
     };
 }

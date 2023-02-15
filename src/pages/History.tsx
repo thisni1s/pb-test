@@ -24,7 +24,7 @@ export default function History() {
     try {
       console.log(pb.authStore.model?.id)
       const historyList = await pb.collection('tasks').getFullList(200, {
-        filter: `(claimed="${pb.authStore.model?.id}" && spend_minutes>=0)`,
+        filter: `(claimed~"${pb.authStore.model?.id}" && spend_minutes>=0)`,
         sort: '-updated',
       });
       setHistory(historyList.map(record => taskFromRecord(record)));

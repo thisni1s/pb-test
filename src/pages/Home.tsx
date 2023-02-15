@@ -4,7 +4,7 @@ import { Fab, Container, Typography, LinearProgress } from '@mui/material';
 import { Stack } from '@mui/system';
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 
-import { Task } from '../models/Task';
+import { Task, taskFromRecord } from '../models/Task';
 import TaskCard from '../components/TaskCard';
 import NewTask from '../components/NewTask';
 import BotNavigation from '../components/BotNavigation';
@@ -17,7 +17,7 @@ export default function Home() {
   const baseurl = 'https://base.jn2p.de';
   const pb = new PocketBase(baseurl);
   const [wtime, setWtime] = useState({val: 0, unit: 'day', worked: 0});
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [newDia, setNewDia] = useState<boolean>(false);
   useEffect(() => {
     async function taskGet() {
@@ -51,7 +51,7 @@ export default function Home() {
           username: await getUsernameForUserid(task.creator)
         };
       });
-      setTasks(taskList);
+      setTasks(taskList.map(task => taskFromRecord(task)));
     } catch (error) {
       console.log(error);
     }
@@ -63,16 +63,16 @@ export default function Home() {
   }
 
   function handleEvent(event: RecordSubscription<Record>) {
+    const changedTask = taskFromRecord({...event.record, username: getUsernameForUserid(event.record.creator || '')})
     console.log('i am listening, ', event);
     setTasks(prevstate => {
-      const missingData: Record = prevstate[0];
       switch (event.action) {
       case 'create':
-        return [...prevstate, { username: 'testUser', ...event.record, ...missingData}];
+        return [...prevstate, changedTask];
       case 'delete':
         return prevstate.filter(el => el.id !== event.record.id);
       case 'update':
-        return prevstate.map(el => el.id === event.record.id ? { username: el.username, ...event.record,  ...missingData}: el);      
+        return prevstate.map(el => el.id === event.record.id ? changedTask : el);      
       default:
         return prevstate;
       }
@@ -95,10 +95,39 @@ export default function Home() {
     }      
   }
 
+  async function updateTask(task: Task) {
+    if(task.id !== undefined) {
+      try {
+        await pb.collection('tasks').update(task.id, task);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+
+  async function finishTask(id: string, duration: number) {
+    const task = tasks.find(el => el.id === id);
+    const userid = pb.authStore.model?.id || '';
+    if (task !== undefined && userid !== '') {
+      !task.claimed.includes(userid) ? task.claimed.push(userid) : null
+      task.spend_minutes = duration;
+      await updateTask(task);
+    }    
+  }
+
+  async function claimTask(id: string) {
+    const task = tasks.find(el => el.id === id);
+    const userid = pb.authStore.model?.id || '';
+    if (task !== undefined && userid !== '') {
+      !task.claimed.includes(userid) ? task.claimed.push(userid) : null
+      await updateTask(task);
+    }
+  }
+
   function getTaskCards() {
     return tasks
       .filter(task => task.spend_minutes === 0)
-      .map(task => {return <TaskCard deleteEntry={deleteEntry} key={task.id} task={task} userid={pb.authStore.model?.id || ''} />;});
+      .map(task => {return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} key={task.id || ''} task={task} userid={pb.authStore.model?.id || ''} />;});
   }
 
   async function createEntry(data: Task): Promise<boolean> {
