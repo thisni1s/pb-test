@@ -5,13 +5,14 @@ import PocketBase from 'pocketbase';
 import TopBar from '../components/TopBar';
 import BotNavigation from '../components/BotNavigation';
 import { Task, taskFromRecord } from '../models/Task';
+import { WorkEntry, workEntryFromRecord } from '../models/WorkEntry';
 
-
+type WTask = [Task, WorkEntry];
 
 export default function History() {
   const baseurl = 'https://base.jn2p.de';
   const pb = new PocketBase(baseurl);
-  const [history, setHistory] = useState<Task[]>([]);
+  const [history, setHistory] = useState<WTask[]>([]);
 
   useEffect(() => {
     async function historyGet() {
@@ -23,11 +24,12 @@ export default function History() {
   async function initHistory() {
     try {
       console.log(pb.authStore.model?.id)
-      const historyList = await pb.collection('tasks').getFullList(200, {
-        filter: `(claimed~"${pb.authStore.model?.id}" && spend_minutes>=0)`,
+      const historyList = await pb.collection('work_entries').getFullList(200, {
+        expand: 'task',
         sort: '-updated',
       });
-      setHistory(historyList.map(record => taskFromRecord(record)));
+      const list: WTask[] = historyList.map(record => [taskFromRecord(record.expand.task), workEntryFromRecord(record)]);
+      setHistory(list)
     } catch (error) {
       console.log(error);
     }
@@ -35,7 +37,7 @@ export default function History() {
 
   function getHistory() {
     return history
-      .map(el => {return <Typography>Eintrag: Titel: {el.title} Beschreibung: {el.description} ID: {el.id} spend_minutes: {el.spend_minutes}</Typography>;});
+      .map(el => {return <Typography>Eintrag: Titel: {el[0].title} Beschreibung: {el[0].description} ID: {el[0].id} spend_minutes: {el[1].minutes}</Typography>;});
   }
 
 

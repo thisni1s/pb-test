@@ -2,23 +2,26 @@ import React, { useState } from 'react';
 import { Dialog, AppBar, Toolbar, IconButton, Typography, Button, Stack, TextField, Switch } from '@mui/material';
 import { Task } from '../models/Task';
 import CloseIcon from '@mui/icons-material/Close';
+import { WorkEntry } from '../models/WorkEntry';
 
 
 interface Props {
     userid: string,
     visible: boolean
     setVisible: (state: boolean) => void,
-    createEntry: (data: Task) => Promise<boolean>,
+    createEntry: (data: Task) => Promise<Task>,
+    createWorkEntry: (data: WorkEntry) => Promise<boolean>,
 }
 
-export default function NewTask({ userid, visible, setVisible, createEntry }: Props ) {
+export default function NewTask({ userid, visible, setVisible, createEntry, createWorkEntry }: Props ) {
     const [title, setTitle] = useState<string>('');
     const [description, setDiscription] = useState<string>('');
-    const [spendMin, setSpendMin] = useState<number | string>(0);
+    const [spendMin, setSpendMin] = useState<number>(0);
     const [done, setDone] = useState<boolean>(false);
     const [claim, setClaim] = useState<boolean>(false);
 
     async function handleClose(save: boolean) {
+      console.log('close!!!', save)
       if (save) {
         //sanity checks
         if(title.length === 0 || (done && spendMin <= 0)) {
@@ -26,19 +29,32 @@ export default function NewTask({ userid, visible, setVisible, createEntry }: Pr
         } else {
             const data = {
                 'creator': userid,
-                'claimed': (claim || done) ? userid: '',
+                'claimed': (claim || done) ? [userid] : [],
                 'title': title,
                 'description': description,
-                'spend_minutes': spendMin
+                'done': done,
             } as Task;  
-          const success = await createEntry(data);
-          !success ? alert('error creating task') : null;
+          const task = await createEntry(data);
+          if(task.id !== '' && task !== undefined && done) {
+            await createWorkEntry({'user': userid, 'task': task.id || '', 'minutes': spendMin})
+          }
+          task.id == undefined ? alert('error creating task') : null;
           setVisible(false);
+          resetState()
         }
       } else {
         setVisible(false);
-      }
-        
+        resetState()
+        console.log('visible is false');
+      }        
+    }
+
+    function resetState() {
+      setTitle('');
+      setDiscription('');
+      setSpendMin(0);
+      setDone(false);
+      setClaim(false);
     }
 
     return (
@@ -91,7 +107,7 @@ export default function NewTask({ userid, visible, setVisible, createEntry }: Pr
                 placeholder='0'
                 label='Duration minutes'
                 value={spendMin}
-                onChange={(e) => setSpendMin(e.target.value)}
+                onChange={(e) => setSpendMin(Number(e.target.value))}
                 sx={{mb: 2}}
               />
               :

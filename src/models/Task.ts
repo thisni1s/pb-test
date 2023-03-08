@@ -5,8 +5,9 @@ export type Task = {
     title: string,
     description: string,
     creator: string,
+    username: string,
     claimed: string[],
-    spend_minutes: number | string,
+    done: boolean,
 }
 
 export function taskFromRecord(record: any): Task {
@@ -16,6 +17,7 @@ export function taskFromRecord(record: any): Task {
         description: record.description || '',
         creator: record.creator || '',
         claimed: record.claimed || [],
-        spend_minutes: record.spend_minutes || 0,
+        done: record.done || false,
+        username: record.username || '',
     };
 }
