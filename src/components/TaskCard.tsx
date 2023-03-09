@@ -49,8 +49,8 @@ export default function TaskCard({ userid, task, doneBy, fByMe, deleteEntry, cla
       const claimedStrEnd = task.claimed.length > 1 ? ' u.a.' : ''
       const claimedStr = task.claimed[0] +  claimedStrEnd
       return (
-        <ButtonGroup variant='outlined' aria-label='claim-button-group' size='small'>
-          <Button disabled>{claimedStr}</Button>
+        <ButtonGroup variant='outlined' aria-label='claim-button-group' size='small' sx={{flexGrow: 1, pb: 1}}>
+          <Button disabled sx={{overflow: 'hidden'}}>{claimedStr}</Button>
           <ClaimButton/>
         </ButtonGroup>
       )
@@ -58,7 +58,7 @@ export default function TaskCard({ userid, task, doneBy, fByMe, deleteEntry, cla
 
     function unfinishedTask() {
       return (
-        <Stack direction='row' spacing={2} sx={{display: 'flex', mt: 1}}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{display: 'flex', mt: 1, flexWrap: 'nowrap'}}>
           {
             task.claimed.length > 0 ? 
             <AddClaim/> 

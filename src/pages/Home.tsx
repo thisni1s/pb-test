@@ -4,6 +4,7 @@ import { Fab, Container, Typography, LinearProgress, Divider, Dialog } from '@mu
 import { Stack } from '@mui/system';
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 import moment, { min } from 'moment';
+import { useNavigate } from 'react-router-dom';
 
 import { Task, taskFromRecord } from '../models/Task';
 import TaskCard from '../components/TaskCard';
@@ -13,16 +14,19 @@ import TopBar from '../components/TopBar';
 
 import AddIcon from '@mui/icons-material/Add';
 import { WorkEntry, workEntryFromRecord } from '../models/WorkEntry';
+import { formatTime, getUsernameForUserid, sanitizeTime } from '../helpers';
 
 
 export default function Home() {
   const baseurl = 'https://base.jn2p.de';
   const pb = new PocketBase(baseurl);
+  const navigate = useNavigate();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [wEntries, setWEntries] = useState<WorkEntry[]>([]);
   const [newDia, setNewDia] = useState<boolean>(false);
 
   useEffect(() => {
+    !pb.authStore.isValid ? navigate('/auth') : null
     async function taskGet() {
       await initTasks();
       await initWEntries();
@@ -46,15 +50,14 @@ export default function Home() {
   async function initTasks() {
     try {
       const time = moment().subtract(1, 'week');
-      const timeStr = time.format('YYYY-MM-DD hh:mm:ss');
       let taskList: any[] = await pb.collection('tasks').getFullList(200, {
-        filter: '(done=false)||(done=true&&updated>="'+timeStr+'")',
+        filter: `(done=false)||(done=true&&updated>="${formatTime(time)}")`,
         expand: 'creator,claimed'
       });
       taskList = taskList.map(task => {
         return {
           ...task,
-          username: getUsernameForUserid(task.creator)
+          username: getUsernameForUserid(task.creator, pb.authStore.model?.id)
         }
       })
       setTasks(taskList.map(task => taskFromRecord(task)));
@@ -66,9 +69,8 @@ export default function Home() {
   async function initWEntries() {
     try {
       const time = moment().subtract(1, 'month');
-      const timeStr = time.format('YYYY-MM-DD hh:mm:ss');
       const records = await pb.collection('work_entries').getFullList(200 , {
-        filter: `created>="${timeStr}"`,
+        filter: `created>="${formatTime(time)}"&&user="${pb.authStore.model?.id}"`,
         sort: '-created',
       });
       console.log('work entries: ', records)
@@ -78,13 +80,8 @@ export default function Home() {
     }    
   }
   
-  function getUsernameForUserid(id: string) {
-    //return await apicallGet('GET', baseurl+'/api/st_users/'+id, pb.authStore.token)
-    return id;
-  }
-
   function handleEvent(event: RecordSubscription<Record>) {
-    const changedTask = taskFromRecord({...event.record, username: getUsernameForUserid(event.record.creator || '')})
+    const changedTask = taskFromRecord({...event.record, username: getUsernameForUserid(event.record.creator || '', pb.authStore.model?.id)})
     console.log('i am listening, ', event);
     setTasks(prevstate => {
       switch (event.action) {
@@ -101,34 +98,33 @@ export default function Home() {
   }
 
   function handleWEntryEvent(event: RecordSubscription<Record>) {
+    console.log('i am listening, ', event);    
     const changedEntry = workEntryFromRecord(event.record)
-    console.log('i am listening, ', event);
-    setWEntries(prevstate => {
-      switch (event.action) {
-      case 'create':
-        return [...prevstate, changedEntry];
-      case 'delete':
-        return prevstate.filter(el => el.id !== event.record.id);
-      case 'update':
-        return prevstate.map(el => el.id === event.record.id ? changedEntry : el);      
-      default:
-        return prevstate;
-      }
-    });
+    if(changedEntry.user === pb.authStore.model?.id){
+      setWEntries(prevstate => {
+        switch (event.action) {
+        case 'create':
+          return [...prevstate, changedEntry];
+        case 'delete':
+          return prevstate.filter(el => el.id !== event.record.id);
+        case 'update':
+          return prevstate.map(el => el.id === event.record.id ? changedEntry : el);      
+        default:
+          return prevstate;
+        }
+      });
+    }
+  }
+
+  function handleLogout() {
+    pb.authStore.clear();
+    navigate('/auth');
   }
 
   function calcWTime(entries: WorkEntry[]) {
     let minutes = 0;
     entries.forEach(entry => minutes = minutes + entry.minutes);
     return minutes;     
-  }
-
-  function sanitizeTime(mins : number) {
-    if (mins < 60) {
-      return mins+' minutes';
-    } else {
-      return Math.round((mins/60) *100)/100+' hours';
-    }
   }
 
   async function deleteEntry(id: string) {
@@ -190,21 +186,25 @@ export default function Home() {
   }
 
   function getDoneBy(claimed: string[]) {
-    return claimed.map(id => getUsernameForUserid(id))
+    return claimed.map(id => getUsernameForUserid(id, pb.authStore.model?.id))
   }
 
   function getFinishedByMe(taskid: string) {
     return wEntries.filter(entry => entry.task === taskid).length > 0 ? true : false
   }
 
+  function getUNamesWrapper(id: string){
+    return getUsernameForUserid(id, pb.authStore.model?.id)
+  }
+
   function getTaskCards(finished: boolean) {
     return finished ?
       tasks.filter(task => task.done === true)
       .map(task => {return {task: task, doneBy: getDoneBy(task.claimed), finishedByMe: getFinishedByMe(task.id || '')}})
-      .map(task => {return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} getUNames={getUsernameForUserid} key={task.task.id || ''} task={task.task} userid={pb.authStore.model?.id || ''} doneBy={task.doneBy} fByMe={task.finishedByMe}/>;})
+      .map(task => {return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} getUNames={getUNamesWrapper} key={task.task.id || ''} task={task.task} userid={pb.authStore.model?.id || ''} doneBy={task.doneBy} fByMe={task.finishedByMe}/>;})
     :
       tasks.filter(task => task.done === false)
-      .map(task => {return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} getUNames={getUsernameForUserid} key={task.id || ''} task={task} userid={pb.authStore.model?.id || ''} />;});
+      .map(task => {return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} getUNames={getUNamesWrapper} key={task.id || ''} task={task} userid={pb.authStore.model?.id || ''} />;});
 
   }
 
@@ -226,8 +226,8 @@ export default function Home() {
 
   return(
     <>
-      <TopBar username={pb.authStore.model?.username as string || 'X'}/>
-      <Container component='main' sx={{flexGrow: 1}}>
+      <TopBar username={pb.authStore.model?.username as string || 'X'} logout={handleLogout}/>
+      <Container component='main' sx={{flexGrow: 1, mt: 10, mb: 5}}>
         <Stack spacing={1} sx={{mt: 2}}>
           <Container>
             <LinearProgress variant='determinate' value={(calcWTime(wEntries) / 240)*100} />
@@ -244,11 +244,11 @@ export default function Home() {
           </Grid>
         </Stack>
         {<NewTask userid={pb.authStore.model?.id || ''} visible={newDia} setVisible={setNewDia} createEntry={createEntry} createWorkEntry={createWorkEntry}/>} 
-        <Fab color='primary' aria-label='add' sx={{ position: 'absolute',  bottom: 60,  right: 20,}} onClick={openNewDia}>
-          <AddIcon />
-        </Fab>
       </Container>
-      <BotNavigation value={0}/>
+      <Fab color='primary' aria-label='add' sx={{ position: 'fixed',  bottom: 60,  right: 20,}} onClick={openNewDia}>
+          <AddIcon />
+      </Fab>
+      <BotNavigation value={0} moderator={pb.authStore.model?.moderator || false}/>
     </>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Container } from '@mui/material';
+import { Typography, Container, Stack } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import PocketBase from 'pocketbase';
 
 import TopBar from '../components/TopBar';
@@ -12,19 +13,27 @@ type WTask = [Task, WorkEntry];
 export default function History() {
   const baseurl = 'https://base.jn2p.de';
   const pb = new PocketBase(baseurl);
+  const navigate = useNavigate();
   const [history, setHistory] = useState<WTask[]>([]);
 
   useEffect(() => {
+    !pb.authStore.isValid ? navigate('/auth') : null
     async function historyGet() {
       await initHistory();
     }
     historyGet();
   }, []);
 
+  function handleLogout() {
+    pb.authStore.clear();
+    navigate('/auth');
+  }
+
   async function initHistory() {
     try {
       console.log(pb.authStore.model?.id)
       const historyList = await pb.collection('work_entries').getFullList(200, {
+        filter: `user="${pb.authStore.model?.id}"`,
         expand: 'task',
         sort: '-updated',
       });
@@ -43,12 +52,12 @@ export default function History() {
 
   return (
     <>
-      <TopBar username={pb.authStore.model?.username as string || 'X'}/>
-      <Container component='main' sx={{flexGrow: 1}}>
+      <TopBar username={pb.authStore.model?.username as string || 'X'} logout={handleLogout}/>
+      <Container component='main' sx={{flexGrow: 1, mt: 10, mb: 5}}>
         <Typography>Hello World</Typography>
         {getHistory()}
       </Container>
-      <BotNavigation value={1}/>
+      <BotNavigation value={1} moderator={pb.authStore.model?.moderator || false}/>
     </>
   );
 

@@ -1,13 +1,14 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import CssBaseline from '@mui/material/CssBaseline';
 import PocketBase from 'pocketbase';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
 import History from './pages/History';
-import { Navigate } from 'react-router-dom';
+import Statistics from './pages/Statistics';
 import Profile from './pages/Profile';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
 
 function App() {
 
@@ -29,6 +30,7 @@ function App() {
           <Route path='/auth' element={<Auth state={{pb: pb}} />} />
           <Route path='/profile' element={<Profile state={{pb: pb}} />} />
           <Route path='/history' element={<History state={{pb: pb}} />} />
+          <Route path='/statistics' element={<Statistics state={{pb: pb}} />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
