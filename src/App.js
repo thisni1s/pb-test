@@ -33,7 +33,7 @@ function getTheme(themeName) {
   }
 }
 
-export const ThemeContext = createContext(getTheme('dark'));
+export const ThemeContext = createContext();
 
 function App() {
   const [themeName, setThemeName] = useState('dark');
