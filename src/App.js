@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, createContext } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -10,18 +10,41 @@ import History from './pages/History';
 import Statistics from './pages/Statistics';
 import Profile from './pages/Profile';
 
-function App() {
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
 
+const lightTheme = createTheme({
+  palette: {
+    mode: 'light',
+  },
+});
+
+function getTheme(themeName) {
+  switch (themeName) {
+    case 'dark':
+      return darkTheme;
+    case 'light':
+      return lightTheme;
+    default:
+      return darkTheme;
+  }
+}
+
+export const ThemeContext = createContext(getTheme('dark'));
+
+function App() {
+  const [themeName, setThemeName] = useState('dark');
   const pb = new PocketBase('https://base.jn2p.de');
 
-  const darkTheme = createTheme({
-    palette: {
-      mode: 'dark',
-    },
-  });
+  const theme = getTheme(themeName);
+
 
   return (
-    <ThemeProvider theme={darkTheme}>
+    <ThemeContext.Provider value={setThemeName}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
         <Routes>
@@ -34,6 +57,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
+    </ThemeContext.Provider>
   );
 }
 

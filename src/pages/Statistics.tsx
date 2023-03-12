@@ -29,9 +29,9 @@ export default function Statistics() {
   const [selectedUser, setSelectedUser] = useState<string>('');
 
   useEffect(() => {
-    !pb.authStore.isValid ? navigate('/auth') : null
-    !pb.authStore.model?.moderator ? navigate('/home') : null
-    console.log('statistics!')
+    !pb.authStore.isValid ? navigate('/auth') : null;
+    !pb.authStore.model?.moderator ? navigate('/home') : null;
+    console.log('statistics!');
     getMonthHistory();
   }, []);
 
@@ -56,8 +56,8 @@ export default function Statistics() {
       const list: WTask[] = historyList.map(record => [taskFromRecord(record.expand.task), workEntryFromRecord(record)]);
       let userHours = new Map<string, WTask[]>();
       for(const entry of list) {
-          const old = userHours.get(entry[1].user)
-          userHours.set(entry[1].user, old !== undefined ? [...old, entry] : [entry])
+          const old = userHours.get(entry[1].user);
+          userHours.set(entry[1].user, old !== undefined ? [...old, entry] : [entry]);
       }
       setUserEntries(userHours);
     } catch (error) {
@@ -76,15 +76,15 @@ export default function Statistics() {
                 <TableCell>{key}</TableCell>
                 <TableCell>{sanitizeTime(time)}</TableCell>
                 <TableCell>{Math.round((time/240)*100)}</TableCell>
-                <TableCell><IconButton onClick={() => {setSelectedUser(key); setUserInfo(true)}}><ListIcon/></IconButton></TableCell>
+                <TableCell><IconButton onClick={() => {setSelectedUser(key); setUserInfo(true);}}><ListIcon/></IconButton></TableCell>
             </TableRow>
-        )
+        );
     });
-    return ret
+    return ret;
   }
 
   function setModalVisibility(state: boolean) {
-    setUserInfo(state)
+    setUserInfo(state);
   }
 
   return (
@@ -98,7 +98,7 @@ export default function Statistics() {
             <Typography sx={{flexGrow: 1, textAlign: 'center'}}>{moment().subtract(offset, 'month').format("MMMM YYYY")}</Typography>
             <IconButton onClick={() => setOffset(prevstate => prevstate-1)}><ChevronRightIcon/></IconButton>
         </Toolbar>
-        <Table sx={{}} aria-label="simple table">
+        <Table sx={{}} aria-label='simple table'>
         <TableHead>
           <TableRow>
             <TableCell>Username</TableCell>

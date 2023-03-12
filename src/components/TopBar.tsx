@@ -1,5 +1,11 @@
-import React, { useState, MouseEvent } from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Avatar, Tooltip, Menu, MenuItem } from '@mui/material';
+import React, { useState, MouseEvent, useContext } from 'react';
+import { AppBar, Toolbar, Typography, IconButton, Avatar, Tooltip, Menu, MenuItem, useTheme } from '@mui/material';
+import { ThemeContext } from '../App';
+
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 
 interface Props {
@@ -9,19 +15,29 @@ interface Props {
 
 export default function TopBar({ username, logout }: Props ) {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-  const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+  const setThemeName = useContext(ThemeContext);
+  const theme = useTheme();
 
   function handleOpenUserMenu(event: MouseEvent<HTMLElement>) {
     setAnchorElUser(event.currentTarget);
-  };
+  }
 
   function handleCloseUserMenu() {
     setAnchorElUser(null);
-  };
+  }
 
   function handleLogout() {
     handleCloseUserMenu();
     logout();
+  }
+
+  function currThemeName() {
+    const ret: string = theme.palette.mode;
+    return ret;
+  }
+
+  function changeTheme() {
+    currThemeName() === 'dark' ? setThemeName('light') : setThemeName('dark');
   }
 
   return(
@@ -43,8 +59,19 @@ export default function TopBar({ username, logout }: Props ) {
           open={Boolean(anchorElUser)}
           onClose={handleCloseUserMenu}
         >
+          <MenuItem key={'username'} disabled>
+            <Typography>{username}</Typography>
+          </MenuItem>
           <MenuItem key={'logout'} onClick={handleLogout}>
-            <Typography textAlign="center">Logout</Typography>
+            <LogoutIcon sx={{pr: 1}}/> <Typography textAlign="center">Logout</Typography>
+          </MenuItem>
+          <MenuItem key={'theme'} onClick={changeTheme}>
+            {
+              currThemeName() === 'dark' ?
+              <> <DarkModeIcon/>  <ArrowForwardIcon/> <LightModeIcon/></>
+              :
+              <> <LightModeIcon/> <ArrowForwardIcon/> <DarkModeIcon/></>
+            }
           </MenuItem>
         </Menu>
       </Toolbar>        
