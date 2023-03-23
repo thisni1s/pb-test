@@ -15,6 +15,7 @@ import TopBar from '../components/TopBar';
 import AddIcon from '@mui/icons-material/Add';
 import { WorkEntry, workEntryFromRecord } from '../models/WorkEntry';
 import { formatTime, getUsernameForUserid, sanitizeTime } from '../helpers';
+import { dblClick } from '@testing-library/user-event/dist/click';
 
 
 export default function Home() {
@@ -24,7 +25,8 @@ export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [wEntries, setWEntries] = useState<WorkEntry[]>([]);
   const [newDia, setNewDia] = useState<boolean>(false);
-
+  const [usernameDb, setUsernameDb] = useState<Map<string, string>>(new Map<string, string>());
+  
   useEffect(() => {
     !pb.authStore.isValid ? navigate('/auth') : null
     async function taskGet() {
@@ -46,6 +48,29 @@ export default function Home() {
       pb.collection('work_entries').unsubscribe();
     };
   }, []);
+
+  useEffect(() => {
+    console.log('userdb: ', usernameDb)
+  }, [usernameDb])
+
+  pb.afterSend = function(response, data) {
+    if(data.usernames !== undefined) {
+      let db = new Map<string, string>()
+      Object.keys(data.usernames).forEach(key => {
+        db.set(key, data.usernames[key]);
+      })
+      console.log('usernamedb: ', db);
+      setUsernameDb(old => {
+        db.forEach(function(value, key) {
+          if(!old.has(key)) {
+            old.set(key, value)
+          }
+        })
+        return old
+      });
+    }
+    return data;
+  } 
   
   async function initTasks() {
     try {
@@ -57,7 +82,7 @@ export default function Home() {
       taskList = taskList.map(task => {
         return {
           ...task,
-          username: getUsernameForUserid(task.creator, pb.authStore.model?.id)
+          username: getUNamesWrapper(task.creator)
         }
       })
       setTasks(taskList.map(task => taskFromRecord(task)));
@@ -81,7 +106,7 @@ export default function Home() {
   }
   
   function handleEvent(event: RecordSubscription<Record>) {
-    const changedTask = taskFromRecord({...event.record, username: getUsernameForUserid(event.record.creator || '', pb.authStore.model?.id)})
+    const changedTask = taskFromRecord({...event.record, username: getUNamesWrapper(event.record.creator || '')})
     console.log('i am listening, ', event);
     setTasks(prevstate => {
       switch (event.action) {
@@ -185,8 +210,12 @@ export default function Home() {
     }
   }
 
-  function getDoneBy(claimed: string[]) {
-    return claimed.map(id => getUsernameForUserid(id, pb.authStore.model?.id))
+  function getDoneOrClaimed(claimed: string[]) {
+    console.log('called');
+    console.log('claimed: ', claimed)
+    const res = claimed.map(id => getUNamesWrapper(id))
+    console.log('res: ', res)
+    return res
   }
 
   function getFinishedByMe(taskid: string) {
@@ -194,17 +223,18 @@ export default function Home() {
   }
 
   function getUNamesWrapper(id: string){
-    return getUsernameForUserid(id, pb.authStore.model?.id)
+    return getUsernameForUserid(id, usernameDb)
   }
 
   function getTaskCards(finished: boolean) {
     return finished ?
       tasks.filter(task => task.done === true)
-      .map(task => {return {task: task, doneBy: getDoneBy(task.claimed), finishedByMe: getFinishedByMe(task.id || '')}})
-      .map(task => {return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} getUNames={getUNamesWrapper} key={task.task.id || ''} task={task.task} userid={pb.authStore.model?.id || ''} doneBy={task.doneBy} fByMe={task.finishedByMe}/>;})
+      .map(task => {return {task: task, doneBy: getDoneOrClaimed(task.claimed), finishedByMe: getFinishedByMe(task.id || ''), creatorName: getUNamesWrapper(task.creator)}})
+      .map(task => {return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} key={task.task.id || ''} task={task.task} userid={pb.authStore.model?.id || ''} creatorName={task.creatorName} doneClaimNames={task.doneBy} fByMe={task.finishedByMe}/>;})
     :
       tasks.filter(task => task.done === false)
-      .map(task => {return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} getUNames={getUNamesWrapper} key={task.id || ''} task={task} userid={pb.authStore.model?.id || ''} />;});
+      .map(task => {return {task: task, claimedBy: getDoneOrClaimed(task.claimed)}})
+      .map(task => {return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} key={task.task.id || ''} task={task.task} userid={pb.authStore.model?.id || ''} creatorName={getUNamesWrapper(task.task.creator)} doneClaimNames={task.claimedBy}/>;});
 
   }
 

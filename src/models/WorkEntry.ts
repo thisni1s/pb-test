@@ -5,6 +5,7 @@ export type WorkEntry = {
     task: string,
     user: string,
     minutes: number,
+    date: string,
 }
 
 export function workEntryFromRecord(record: any): WorkEntry {
@@ -13,5 +14,6 @@ export function workEntryFromRecord(record: any): WorkEntry {
         task: record.task || '',
         user: record.user || '',
         minutes: record.minutes || 0,
+        date: record.created || '',
     };
 }

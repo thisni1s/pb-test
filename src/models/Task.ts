@@ -1,4 +1,7 @@
 import { Record } from "pocketbase"
+import { WorkEntry } from "./WorkEntry";
+
+export type WTask = [Task, WorkEntry];
 
 export type Task = {
     id?: string
@@ -11,13 +14,18 @@ export type Task = {
 }
 
 export function taskFromRecord(record: any): Task {
-    return {
-        id: record.id || '',
-        title: record.title || '',
-        description: record.description || '',
-        creator: record.creator || '',
-        claimed: record.claimed || [],
-        done: record.done || false,
-        username: record.username || '',
-    };
+    if (record !== undefined) {
+        return {
+            id: record.id || '',
+            title: record.title || '',
+            description: record.description || '',
+            creator: record.creator || '',
+            claimed: record.claimed || [],
+            done: record.done || false,
+            username: record.username || '',
+        };
+    } else {
+        return taskFromRecord({})
+    }
+    
 }

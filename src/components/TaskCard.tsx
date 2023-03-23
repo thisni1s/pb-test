@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Card, CardContent, Typography, Stack, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, Divider, ButtonGroup } from '@mui/material';
+import { Card, CardContent, Typography, Stack, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, Divider, ButtonGroup, Container } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 import { Task } from '../models/Task';
 
@@ -11,15 +11,15 @@ import RemoveIcon from '@mui/icons-material/Remove';
 interface Props {
   userid: string,
   task: Task,
-  doneBy?: string[]
+  doneClaimNames: string[]
   fByMe?: boolean,
+  creatorName: string,
   deleteEntry: (id: string) => void,
   claim: (id: string) => void,
   finish: (id: string, duration: number) => void,
-  getUNames: (id: string) => string,
 }
 
-export default function TaskCard({ userid, task, doneBy, fByMe, deleteEntry, claim, finish, getUNames }: Props) {
+export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorName, deleteEntry, claim, finish }: Props) {
     const [dialog, setDialog] = useState<boolean>(false);
     const [delDia, setDelDia] = useState<boolean>(false);
     const [duration, setDuration] = useState<number>(0);
@@ -38,32 +38,36 @@ export default function TaskCard({ userid, task, doneBy, fByMe, deleteEntry, cla
       claim(task.id || '');
     }
 
-    function ClaimButton() {
+    function ClaimButton(props: any) {
+      const sx = props.single ? {flexGrow: 1} : {}
       return (
-        <Button variant='outlined' size='small' sx={{flexGrow: 1}} onClick={handleClaim}>{!task.claimed.includes(userid) ? <AddIcon fontSize='small'/> : <RemoveIcon fontSize='small'/>}</Button>
+        <Button variant='outlined' size='small' sx={sx} onClick={handleClaim}>{!task.claimed.includes(userid) ? <AddIcon fontSize='small'/> : <RemoveIcon fontSize='small'/>}</Button>
       )
     }
 
 
     function AddClaim() {
       const claimedStrEnd = task.claimed.length > 1 ? ' u.a.' : ''
-      const claimedStr = task.claimed[0] +  claimedStrEnd
+      const claimedStr = doneClaimNames[0] + claimedStrEnd
+      console.log('claimed str: ', claimedStr)
       return (
-        <ButtonGroup variant='outlined' aria-label='claim-button-group' size='small' sx={{flexGrow: 1, pb: 1}}>
-          <Button disabled sx={{overflow: 'hidden'}}>{claimedStr}</Button>
-          <ClaimButton/>
+        <ButtonGroup variant='outlined' aria-label='claim-button-group' size='small' sx={{flexGrow: 1}}>
+          <Button disabled sx={{overflow: 'hidden', flexGrow: 1}}>{claimedStr}</Button>
+          <ClaimButton single={false}/>
         </ButtonGroup>
       )
     }
 
     function unfinishedTask() {
+      console.log('task card: ', task.title)
+      console.log('done by: ', doneClaimNames)
       return (
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{display: 'flex', mt: 1, flexWrap: 'nowrap'}}>
           {
             task.claimed.length > 0 ? 
             <AddClaim/> 
             : 
-            <ClaimButton/>  
+            <ClaimButton single={true}/>  
           }                
           <Button variant='outlined' size='small' sx={{flexGrow: 1}} onClick={() => setDialog(true)}><CheckIcon fontSize='small'/></Button>
           {
@@ -78,7 +82,7 @@ export default function TaskCard({ userid, task, doneBy, fByMe, deleteEntry, cla
       return (
         <>
         <br/>
-        <Typography color='text.secondary' variant='caption' gutterBottom>Erledigt von: {doneBy?.join(', ')}</Typography>
+        <Typography color='text.secondary' variant='caption' gutterBottom>Erledigt von: {doneClaimNames?.join(', ')}</Typography>
         <Stack direction='row' spacing={2} sx={{display: 'flex', mt: 1}}>
           <Button disabled={fByMe} variant='outlined' size='small' sx={{flexGrow: 1}} onClick={() => setDialog(true)}>Zeit nachtragen</Button>
         </Stack>
@@ -97,7 +101,7 @@ export default function TaskCard({ userid, task, doneBy, fByMe, deleteEntry, cla
               {task.description}
             </Typography>
             <Typography color='text.secondary' variant='caption'>
-                Erstellt: {task.username}
+                Erstellt von: {task.creator === userid ? 'Dir' : creatorName}
             </Typography>
             {!task.done ? unfinishedTask() : finishedTask()}
             <Dialog open={dialog} onClose={() => setDialog(false)}>
