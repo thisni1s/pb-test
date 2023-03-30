@@ -2,9 +2,9 @@ import moment from "moment";
 
 export function sanitizeTime(mins : number) {
   if (mins < 60) {
-    return mins+' minutes';
+    return mins+' Minuten';
   } else {
-    return Math.round((mins/60) *100)/100+' hours';
+    return Math.round((mins/60) *100)/100+' Stunden';
   }
 }
 

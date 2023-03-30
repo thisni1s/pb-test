@@ -15,7 +15,6 @@ import TopBar from '../components/TopBar';
 import AddIcon from '@mui/icons-material/Add';
 import { WorkEntry, workEntryFromRecord } from '../models/WorkEntry';
 import { formatTime, getUsernameForUserid, sanitizeTime } from '../helpers';
-import { dblClick } from '@testing-library/user-event/dist/click';
 
 
 export default function Home() {
@@ -262,7 +261,7 @@ export default function Home() {
           <Container>
             <LinearProgress variant='determinate' value={(calcWTime(wEntries) / 240)*100} />
             <Typography variant='caption' gutterBottom>
-            Worked: {sanitizeTime(calcWTime(wEntries))} of 4 hours this month
+            Du hast bereits {sanitizeTime(calcWTime(wEntries))} von 4 Stunden diesen Monat gearbeitet.
             </Typography>
           </Container>
           <Grid container spacing={2}>

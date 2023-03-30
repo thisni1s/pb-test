@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import { Card, CardContent, Typography, Stack, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, Divider, ButtonGroup, Container } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
+import { NumericFormat } from 'react-number-format';
 import { Task } from '../models/Task';
 
 import CheckIcon from '@mui/icons-material/Check';
@@ -112,12 +113,13 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
                 <DialogContentText>
                     Aufgabe als Erledigt markieren?
                 </DialogContentText>
-                <TextField
-                  type='number'
-                  placeholder='0'
-                  label='Arbeitszeit (Minuten)'
+                <NumericFormat
+                  customInput={TextField}
+                  onValueChange={(values) => setDuration(Number(values.value))}
                   value={duration}
-                  onChange={(e) => setDuration(Number(e.target.value))}
+                  // you can define additional custom props that are all forwarded to the customInput e. g.
+                  variant="outlined"
+                  label='Arbeitszeit (Minuten)'
                   sx={{mb: 1, mt: 2}}
                 />
                 <DialogActions>

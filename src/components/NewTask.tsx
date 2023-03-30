@@ -21,7 +21,7 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
     const [claim, setClaim] = useState<boolean>(false);
 
     async function handleClose(save: boolean) {
-      console.log('close!!!', save)
+      console.log('close!!!', save);
       if (save) {
         //sanity checks
         if(title.length === 0 || (done && spendMin <= 0)) {
@@ -36,15 +36,15 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
             } as Task;  
           const task = await createEntry(data);
           if(task.id !== '' && task !== undefined && done) {
-            await createWorkEntry({'user': userid, 'task': task.id || '', 'minutes': spendMin, 'date': undefined})
+            await createWorkEntry({'user': userid, 'task': task.id || '', 'minutes': spendMin, 'date': ''});
           }
           task.id == undefined ? alert('error creating task') : null;
           setVisible(false);
-          resetState()
+          resetState();
         }
       } else {
         setVisible(false);
-        resetState()
+        resetState();
         console.log('visible is false');
       }        
     }
@@ -124,4 +124,4 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
       </Dialog>
     );
 
-  };
+}

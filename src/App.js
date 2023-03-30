@@ -34,6 +34,7 @@ function getTheme(themeName) {
 }
 
 export const ThemeContext = createContext();
+export const ChPassContext = createContext();
 
 function App() {
   const [themeName, setThemeName] = useState('dark');
@@ -41,10 +42,23 @@ function App() {
 
   const theme = getTheme(themeName);
 
+  async function changePassword(oldPw, newPw) {
+    try {
+      const record = await pb.collection('users').update(pb.authStore.model.id, {
+        'password': newPw,
+        'passwordConfirm': newPw,
+        'oldPassword': oldPw,
+      });
+    } catch (error) {
+      console.log(error);
+      alert('Fehler beim ändern des Passworts. Hast du das alte Passwort richtig eingegeben?');
+    }
+  }
 
   return (
     <ThemeContext.Provider value={setThemeName}>
     <ThemeProvider theme={theme}>
+    <ChPassContext.Provider value={changePassword}>
       <CssBaseline />
       <BrowserRouter>
         <Routes>
@@ -56,6 +70,7 @@ function App() {
           <Route path='/statistics' element={<Statistics state={{pb: pb}} />} />
         </Routes>
       </BrowserRouter>
+    </ChPassContext.Provider>
     </ThemeProvider>
     </ThemeContext.Provider>
   );
