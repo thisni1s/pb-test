@@ -8,7 +8,6 @@ import Home from './pages/Home';
 import Auth from './pages/Auth';
 import History from './pages/History';
 import Statistics from './pages/Statistics';
-import Profile from './pages/Profile';
 
 const darkTheme = createTheme({
   palette: {
