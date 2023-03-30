@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PocketBase from 'pocketbase';
 
@@ -15,6 +15,7 @@ function Auth() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const pwRef = useRef(null);
   const pb = new PocketBase('https://base.jn2p.de');
   const navigate = useNavigate();
 
@@ -88,6 +89,13 @@ function Auth() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              ref={pwRef}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  login(email, password);
+                }
+              }}
             />
           </Box>
           <Box>
