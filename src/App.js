@@ -64,7 +64,6 @@ function App() {
           <Route path='/' element={<AuthTest pb={pb} />} />
           <Route path='/home' element={<Home state={{pb: pb}} />} />
           <Route path='/auth' element={<Auth state={{pb: pb}} />} />
-          <Route path='/profile' element={<Profile state={{pb: pb}} />} />
           <Route path='/history' element={<History state={{pb: pb}} />} />
           <Route path='/statistics' element={<Statistics state={{pb: pb}} />} />
         </Routes>

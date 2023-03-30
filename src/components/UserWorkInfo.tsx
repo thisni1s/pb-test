@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
-import { Dialog, AppBar, Toolbar, IconButton, Typography, Button, Stack, TextField, Switch, DialogTitle, TableContainer, Paper, TableBody, TableRow, TableCell, TableHead } from '@mui/material';
-import { Task, WTask } from '../models/Task';
-import CloseIcon from '@mui/icons-material/Close';
-import { WorkEntry } from '../models/WorkEntry';
+import React from 'react';
+import { Dialog, DialogTitle, TableContainer, Paper, TableBody, TableRow, TableCell, TableHead } from '@mui/material';
+import { WTask } from '../models/Task';
 import { readableTime, sanitizeTime } from '../helpers';
 
 interface Props {
@@ -16,19 +14,18 @@ interface Props {
 export default function UserWorkInfo({ userid, username, userEntries, visible, setVisible }: Props ) {
 
     function handleClose() {
-      setVisible(false)        
+      setVisible(false);        
     }
 
     function getEntries() {
       return userEntries.map(wtask => {
-        console.log(wtask)
         return (
-          <TableRow>
+          <TableRow key={wtask[1].id}>
             <TableCell>{wtask[0].title}</TableCell>
             <TableCell>{sanitizeTime(wtask[1].minutes)}</TableCell>
             <TableCell>{readableTime(wtask[1].date)}</TableCell>
           </TableRow>
-      )})
+      )});
     }
 
     return (
@@ -47,4 +44,4 @@ export default function UserWorkInfo({ userid, username, userEntries, visible, s
       </Dialog>
     );
 
-  };
+}

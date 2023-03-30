@@ -1,12 +1,11 @@
 import React, { useState, MouseEvent, useContext } from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Avatar, Tooltip, Menu, MenuItem, useTheme, Dialog, Button, DialogActions, DialogContent, DialogTitle, duration, TextField, Stack } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Avatar, Tooltip, Menu, MenuItem, useTheme, Dialog, Button, DialogActions, DialogContent, DialogTitle, TextField, Stack } from '@mui/material';
 import { ThemeContext, ChPassContext } from '../App';
 
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { NumericFormat } from 'react-number-format';
 
 
 interface Props {
@@ -55,7 +54,7 @@ export default function TopBar({ username, logout }: Props ) {
 
   function handlePwChange() {
     if (newPw === newPwConf) {
-      changePassword(password, newPw)
+      changePassword(password, newPw);
       handleDiaClose();
     } else {
       alert('Neue Passwörter stimmen nicht überein!');
@@ -98,7 +97,7 @@ export default function TopBar({ username, logout }: Props ) {
           <Button variant='outlined' size='small' onClick={handlePwChange}>Ändern</Button>
         </DialogActions>
       </Dialog> 
-    )  
+    );  
   }
 
   return(

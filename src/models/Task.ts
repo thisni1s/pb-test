@@ -1,5 +1,4 @@
-import { Record } from "pocketbase"
-import { WorkEntry } from "./WorkEntry";
+import { WorkEntry } from './WorkEntry';
 
 export type WTask = [Task, WorkEntry];
 
@@ -25,7 +24,6 @@ export function taskFromRecord(record: any): Task {
             username: record.username || '',
         };
     } else {
-        return taskFromRecord({})
-    }
-    
+        return taskFromRecord({});
+    }    
 }

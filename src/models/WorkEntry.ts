@@ -1,7 +1,5 @@
-import { Record } from "pocketbase"
-
 export type WorkEntry = {
-    id?: string
+    id?: string,
     task: string,
     user: string,
     minutes: number,

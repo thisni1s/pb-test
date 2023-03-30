@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import PocketBase, { Record, RecordSubscription } from 'pocketbase';
-import { Fab, Container, Typography, LinearProgress, Divider, Dialog } from '@mui/material';
+import { Fab, Container, Typography, LinearProgress, Divider } from '@mui/material';
 import { Stack } from '@mui/system';
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
-import moment, { min } from 'moment';
+import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 
 import { Task, taskFromRecord } from '../models/Task';
@@ -27,7 +27,9 @@ export default function Home() {
   const [usernameDb, setUsernameDb] = useState<Map<string, string>>(new Map<string, string>());
   
   useEffect(() => {
-    !pb.authStore.isValid ? navigate('/auth') : null
+    if (!pb.authStore.isValid) {
+      navigate('/auth');
+    }
     async function taskGet() {
       await initTasks();
       await initWEntries();
@@ -41,35 +43,31 @@ export default function Home() {
     });
     pb.collection('work_entries').subscribe('*', function(e: RecordSubscription<Record>) {
       handleWEntryEvent(e);
-    })
+    });
     return function cleanup() {
       pb.collection('tasks').unsubscribe();
       pb.collection('work_entries').unsubscribe();
     };
   }, []);
 
-  useEffect(() => {
-    console.log('userdb: ', usernameDb)
-  }, [usernameDb])
-
   pb.afterSend = function(response, data) {
     if(data.usernames !== undefined) {
-      let db = new Map<string, string>()
+      let db = new Map<string, string>();
       Object.keys(data.usernames).forEach(key => {
         db.set(key, data.usernames[key]);
-      })
+      });
       console.log('usernamedb: ', db);
       setUsernameDb(old => {
         db.forEach(function(value, key) {
           if(!old.has(key)) {
-            old.set(key, value)
+            old.set(key, value);
           }
         })
         return old
       });
     }
     return data;
-  } 
+  }; 
   
   async function initTasks() {
     try {
@@ -82,8 +80,8 @@ export default function Home() {
         return {
           ...task,
           username: getUNamesWrapper(task.creator)
-        }
-      })
+        };
+      });
       setTasks(taskList.map(task => taskFromRecord(task)));
     } catch (error) {
       console.log(error);
@@ -97,15 +95,15 @@ export default function Home() {
         filter: `created>="${formatTime(time)}"&&user="${pb.authStore.model?.id}"`,
         sort: '-created',
       });
-      console.log('work entries: ', records)
+      //console.log('work entries: ', records);
       setWEntries(records.map(entry => workEntryFromRecord(entry)));
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }    
   }
   
   function handleEvent(event: RecordSubscription<Record>) {
-    const changedTask = taskFromRecord({...event.record, username: getUNamesWrapper(event.record.creator || '')})
+    const changedTask = taskFromRecord({...event.record, username: getUNamesWrapper(event.record.creator || '')});
     console.log('i am listening, ', event);
     setTasks(prevstate => {
       switch (event.action) {
@@ -122,8 +120,8 @@ export default function Home() {
   }
 
   function handleWEntryEvent(event: RecordSubscription<Record>) {
-    console.log('i am listening, ', event);    
-    const changedEntry = workEntryFromRecord(event.record)
+    //console.log('i am listening, ', event);    
+    const changedEntry = workEntryFromRecord(event.record);
     if(changedEntry.user === pb.authStore.model?.id){
       setWEntries(prevstate => {
         switch (event.action) {
@@ -153,7 +151,9 @@ export default function Home() {
 
   async function deleteEntry(id: string) {
     try {
-      id != '' ? await pb.collection('tasks').delete(id) : null;
+      if (id !== '') {
+        await pb.collection('tasks').delete(id);
+      }
     } catch (error) {
       console.log(error);
     }      
@@ -172,10 +172,10 @@ export default function Home() {
   async function createWorkEntry(entry: WorkEntry): Promise<boolean>{
     try {
       const data = {
-        "user": entry.user,
-        "task": entry.task,
-        "minutes": entry.minutes,
-      }
+        'user': entry.user,
+        'task': entry.task,
+        'minutes': entry.minutes,
+      };
       const record = await pb.collection('work_entries').create(data);
       return true;
     } catch (error) {
@@ -188,7 +188,9 @@ export default function Home() {
     const task = tasks.find(el => el.id === id);
     const userid = pb.authStore.model?.id || '';
     if (task !== undefined && userid !== '') {
-      !task.claimed.includes(userid) ? task.claimed.push(userid) : task
+      if (!task.claimed.includes(userid)) {
+        task.claimed.push(userid);
+      }
       task.done = true;
       await createWorkEntry(workEntryFromRecord({'user': userid, 'task': id, 'minutes': duration}));
       await updateTask(task); // this call may be uneccessary if the task has already been done and the user is already in the claimed array
@@ -201,28 +203,28 @@ export default function Home() {
     const userid = pb.authStore.model?.id || '';
     if (task !== undefined && userid !== '') {
       if(task.claimed.includes(userid)){
-        task.claimed = task.claimed.filter(user => user !== userid)
+        task.claimed = task.claimed.filter(user => user !== userid);
       } else {
-        task.claimed.push(userid)
+        task.claimed.push(userid);
       }
       await updateTask(task);
     }
   }
 
   function getDoneOrClaimed(claimed: string[]) {
-    console.log('called');
-    console.log('claimed: ', claimed)
-    const res = claimed.map(id => getUNamesWrapper(id))
-    console.log('res: ', res)
-    return res
+    //console.log('called');
+    //console.log('claimed: ', claimed);
+    const res = claimed.map(id => getUNamesWrapper(id));
+    //console.log('res: ', res);
+    return res;
   }
 
   function getFinishedByMe(taskid: string) {
-    return wEntries.filter(entry => entry.task === taskid).length > 0 ? true : false
+    return wEntries.filter(entry => entry.task === taskid).length > 0 ? true : false;
   }
 
   function getUNamesWrapper(id: string){
-    return getUsernameForUserid(id, usernameDb)
+    return getUsernameForUserid(id, usernameDb);
   }
 
   function getTaskCards(finished: boolean) {
@@ -249,7 +251,7 @@ export default function Home() {
 
   function openNewDia() {
     console.log('open new dia');
-    newDia? setNewDia(false) : setNewDia(true)
+    newDia? setNewDia(false) : setNewDia(true);
     console.log('opened');
   }
 

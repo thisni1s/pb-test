@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Typography, Container, Stack, Table, TableCell, TableBody, TableContainer, TableRow, TableHead, Paper, Toolbar, IconButton } from '@mui/material';
+import { Typography, Container, Table, TableCell, TableBody, TableContainer, TableRow, TableHead, Paper, Toolbar, IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import PocketBase from 'pocketbase';
 import moment from 'moment';
 
 import TopBar from '../components/TopBar';
 import BotNavigation from '../components/BotNavigation';
-import { Task, taskFromRecord, WTask } from '../models/Task';
-import { WorkEntry, workEntryFromRecord } from '../models/WorkEntry';
+import { taskFromRecord, WTask } from '../models/Task';
+import { workEntryFromRecord } from '../models/WorkEntry';
 import { formatTime, getUsernameForUserid, sanitizeTime } from '../helpers';
 
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -30,15 +30,19 @@ export default function Statistics() {
   const [usernameDb, setUsernameDb] = useState<Map<string, string>>(new Map<string, string>());
 
   useEffect(() => {
-    !pb.authStore.isValid ? navigate('/auth') : null;
-    !pb.authStore.model?.moderator ? navigate('/home') : null;
+    if (!pb.authStore.isValid) {
+      navigate('/auth');
+    }
+    if (!pb.authStore.model?.moderator) {
+      navigate('/home');
+    }
     console.log('statistics!');
     getMonthHistory();
   }, []);
 
   useEffect(() => {
     getMonthHistory();
-  }, [offset])
+  }, [offset]);
 
   
 
@@ -46,22 +50,22 @@ export default function Statistics() {
     console.log('res: ', response);
     console.log('data: ', data);
     if(data.usernames !== undefined) {
-      let db = new Map<string, string>()
+      let db = new Map<string, string>();
       Object.keys(data.usernames).forEach(key => {
         db.set(key, data.usernames[key]);
-      })
+      });
       console.log('usernamedb: ', db);
       setUsernameDb(old => {
         db.forEach(function(value, key) {
           if(!old.has(key)) {
-            old.set(key, value)
+            old.set(key, value);
           }
-        })
-        return old
+        });
+        return old;
       });
     }
     return data;
-  } 
+  }; 
 
   function handleLogout() {
     pb.authStore.clear();
@@ -77,7 +81,7 @@ export default function Statistics() {
         expand: 'task',
         sort: '-updated',
       });
-      console.log('hlist: ', historyList)
+      //console.log('hlist: ', historyList);
       const list: WTask[] = historyList.map(record => [taskFromRecord(record.expand.task), workEntryFromRecord(record)]);
       let userHours = new Map<string, WTask[]>();
       for(const entry of list) {
@@ -101,7 +105,7 @@ export default function Statistics() {
                 <TableCell>{key}</TableCell>
                 <TableCell>{sanitizeTime(time)}</TableCell>
                 <TableCell>{Math.round((time/240)*100)}</TableCell>
-                <TableCell><IconButton onClick={() => {openUserPopup(key)}}><ListIcon/></IconButton></TableCell>
+                <TableCell><IconButton onClick={() => openUserPopup(key)}><ListIcon/></IconButton></TableCell>
             </TableRow>
         );
     });
@@ -115,7 +119,7 @@ export default function Statistics() {
   }
 
   function getSingleUserEntries(userid: string): WTask[] {
-    return userEntries.get(userid) || []
+    return userEntries.get(userid) || [];
   }
 
   function setModalVisibility(state: boolean) {

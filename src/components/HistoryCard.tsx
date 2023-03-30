@@ -33,7 +33,7 @@ export default function HistoryCard({ task, workEntry,  deleteEntry, changeTime 
         return (
             <Dialog open={dialog} onClose={() => setDialog(false)}>
                 <DialogTitle>
-                    "{task.title}" Löschen?
+                    {task.title} Löschen?
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText>
@@ -45,14 +45,14 @@ export default function HistoryCard({ task, workEntry,  deleteEntry, changeTime 
                     <Button variant='outlined' size='small' onClick={handleDelete}>Löschen</Button>
                 </DialogActions>
             </Dialog>      
-        )
+        );
     }
 
     function changeDia() {
         return (
             <Dialog open={timeDialog} onClose={() => setTimeDialog(false)}>
                 <DialogTitle>
-                     Zeit für Aufgabe "{task.title}" ändern
+                     Zeit für Aufgabe {task.title} ändern
                 </DialogTitle>
                 <DialogContent>
                     <NumericFormat
@@ -70,7 +70,7 @@ export default function HistoryCard({ task, workEntry,  deleteEntry, changeTime 
                     <Button variant='outlined' size='small' onClick={handleTimeChange}>Speichern</Button>
                 </DialogActions>
             </Dialog>      
-        )
+        );
     }
 
     return (
@@ -100,4 +100,4 @@ export default function HistoryCard({ task, workEntry,  deleteEntry, changeTime 
       </Grid>  
     );
 
-  };
+  }

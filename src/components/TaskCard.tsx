@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { Card, CardContent, Typography, Stack, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, Divider, ButtonGroup, Container } from '@mui/material';
+import { Card, CardContent, Typography, Stack, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, ButtonGroup } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2'; // Grid version 2
 import { NumericFormat } from 'react-number-format';
 import { Task } from '../models/Task';
@@ -40,28 +40,25 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
     }
 
     function ClaimButton(props: any) {
-      const sx = props.single ? {flexGrow: 1} : {}
+      const sx = props.single ? {flexGrow: 1} : {};
       return (
         <Button variant='outlined' size='small' sx={sx} onClick={handleClaim}>{!task.claimed.includes(userid) ? <AddIcon fontSize='small'/> : <RemoveIcon fontSize='small'/>}</Button>
-      )
+      );
     }
 
 
     function AddClaim() {
-      const claimedStrEnd = task.claimed.length > 1 ? ' u.a.' : ''
-      const claimedStr = doneClaimNames[0] + claimedStrEnd
-      console.log('claimed str: ', claimedStr)
+      const claimedStrEnd = task.claimed.length > 1 ? ' u.a.' : '';
+      const claimedStr = doneClaimNames[0] + claimedStrEnd;
       return (
         <ButtonGroup variant='outlined' aria-label='claim-button-group' size='small' sx={{flexGrow: 1}}>
           <Button disabled sx={{overflow: 'hidden', flexGrow: 1}}>{claimedStr}</Button>
           <ClaimButton single={false}/>
         </ButtonGroup>
-      )
+      );
     }
 
     function unfinishedTask() {
-      console.log('task card: ', task.title)
-      console.log('done by: ', doneClaimNames)
       return (
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{display: 'flex', mt: 1, flexWrap: 'nowrap'}}>
           {
@@ -75,11 +72,10 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
             task.creator === userid ? <IconButton aria-label='delete' size='small' onClick={() => setDelDia(true)}><DeleteIcon fontSize='small'/></IconButton> : <></>
           }
         </Stack>
-      )
+      );
     }
 
     function finishedTask() {
-      console.log('finished by me? ', fByMe)
       return (
         <>
         <br/>
@@ -88,7 +84,7 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
           <Button disabled={fByMe} variant='outlined' size='small' sx={{flexGrow: 1}} onClick={() => setDialog(true)}>Zeit nachtragen</Button>
         </Stack>
         </>
-      )
+      );
     }
 
     return (
@@ -140,4 +136,4 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
       </Grid>
     );
 
-  };
+  }

@@ -1,4 +1,4 @@
-import moment from "moment";
+import moment from 'moment';
 
 export function sanitizeTime(mins : number) {
   if (mins < 60) {
@@ -9,7 +9,7 @@ export function sanitizeTime(mins : number) {
 }
 
 export function getUsernameForUserid(id: string, db: Map<string, string>) {
-  const username = db.get(id)
+  const username = db.get(id);
   if(username !== undefined) {
     return username;
   } else {
@@ -22,5 +22,5 @@ export function formatTime(time: moment.Moment): string {
 }
 
 export function readableTime(time: string): string {
-  return moment(time).format("DD.MM.YY");
+  return moment(time).format('DD.MM.YY');
 }

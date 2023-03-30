@@ -25,6 +25,7 @@ export default function BotNavigation({ value, moderator }: Props ) {
           break;
         case 2:
           navigate('/statistics');
+          break;
         default:
           break;
         }
@@ -39,5 +40,5 @@ export default function BotNavigation({ value, moderator }: Props ) {
         {moderator ? <BottomNavigationAction label='Statistics' icon={<TableChartIcon />} /> : <></>}      
       </BottomNavigation>
     </Paper>
-  )
+  );
 }

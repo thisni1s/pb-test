@@ -38,7 +38,9 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
           if(task.id !== '' && task !== undefined && done) {
             await createWorkEntry({'user': userid, 'task': task.id || '', 'minutes': spendMin, 'date': ''});
           }
-          task.id == undefined ? alert('error creating task') : null;
+          if (task.id === undefined) {
+            alert('error creating task');
+          }          
           setVisible(false);
           resetState();
         }
