@@ -6,6 +6,7 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import LogoutIcon from '@mui/icons-material/Logout';
+import InfoIcon from '@mui/icons-material/Info';
 
 
 interface Props {
@@ -16,6 +17,7 @@ interface Props {
 export default function TopBar({ username, logout }: Props ) {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   const [dialog, setDialog] = useState<boolean>(false);
+  const [info, setInfo] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('');
   const [newPw, setNewPw] = useState<string>('');
   const [newPwConf, setNewPwConf] = useState<string>('');
@@ -61,7 +63,7 @@ export default function TopBar({ username, logout }: Props ) {
     } 
   }
 
-  function changePasswordDia() {
+  function ChangePasswordDia() {
     return (
       <Dialog open={dialog} onClose={handleDiaClose}>
         <DialogTitle>
@@ -100,7 +102,29 @@ export default function TopBar({ username, logout }: Props ) {
     );  
   }
 
+  function InfoDia() {
+    return (
+    <Dialog open={info} onClose={() => setInfo(false)}>
+        <DialogTitle>
+          Simple Time
+        </DialogTitle>
+        <DialogContent>
+        <Stack spacing={1}>
+          <Typography>Version 0.1</Typography>
+          <Typography>Quelltext hier: https://github.com/thisni1s/pb-test/</Typography>
+          <Typography>Fehler hier melden: https://github.com/thisni1s/pb-test/issues</Typography> 
+        
+        </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button variant='outlined' size='small' onClick={() => setInfo(false)}>Ok</Button>
+        </DialogActions>
+      </Dialog>
+    );
+  }
+
   return(
+    <>
     <AppBar position='fixed' sx={{maxHeight: '10%'}}>
       <Toolbar>
         <Typography variant='h6' component='div' sx={{ flexGrow: 1, ml: 2 }}>
@@ -136,9 +160,14 @@ export default function TopBar({ username, logout }: Props ) {
               <> <LightModeIcon/> <ArrowForwardIcon/> <DarkModeIcon/></>
             }
           </MenuItem>
+          <MenuItem key={'info'} onClick={() => setInfo(true)}>
+            <InfoIcon sx={{pr: 1}}/> <Typography textAlign="center"> Info </Typography>
+          </MenuItem>
         </Menu>
-        {changePasswordDia()}
       </Toolbar>        
     </AppBar>
+    {InfoDia()}
+    {ChangePasswordDia()}
+    </>
   );
 }

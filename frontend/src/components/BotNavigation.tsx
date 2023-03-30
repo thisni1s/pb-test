@@ -15,7 +15,7 @@ export default function BotNavigation({ value, moderator }: Props ) {
   const navigate = useNavigate();
 
   function nav(event: any, newValue: number) {
-    if(newValue != value) {
+    if(newValue !== value) {
       switch(newValue) {
         case 0:
           navigate('/home');
