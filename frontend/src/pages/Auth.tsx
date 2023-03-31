@@ -20,33 +20,41 @@ function Auth() {
   const navigate = useNavigate();
 
   async function login(username: string, password: string) {
-    setLoading(true);
-    console.log(pb.authStore);
-    try {
-      const authData = await pb.collection('users').authWithPassword(username, password);
-      console.log('hello');
-      navigate('/home');
-    } catch (err) {
-      console.log(err);
-      alert('Someting went wrong while logging in');
-    }
-    setLoading(false);    
+    if (username.length > 0 && password.length > 0) {
+      setLoading(true);
+      console.log(pb.authStore);
+      try {
+        const authData = await pb.collection('users').authWithPassword(username, password);
+        console.log('hello');
+        navigate('/home');
+      } catch (err) {
+        console.log(err);
+        alert('Someting went wrong while logging in');
+      }
+      setLoading(false);
+    } else {
+      alert('Nutzername und Passwort sind Pflichtfelder!');
+    }    
   }
 
   async function signup(username: string, password: string) {
-    setLoading(true);
-    const data = {
-      'username': username,
-      'password': password,
-      'passwordConfirm': password,
-      'name': '',
-    };
-    try {
-      const row = await pb.collection('users').create(data);
-      await login(username, password);
-    } catch (err) {
-      console.log(err);
-      alert('Something went wrong while registering');
+    if (username.length > 0 && password.length > 0) {
+      setLoading(true);
+      const data = {
+        'username': username,
+        'password': password,
+        'passwordConfirm': password,
+        'name': '',
+      };
+      try {
+        const row = await pb.collection('users').create(data);
+        await login(username, password);
+      } catch (err) {
+        console.log(err);
+        alert('Something went wrong while registering');
+      }
+    } else {
+      alert('Nutzername und Passwort sind Pflichtfelder!');
     }
   }
 
