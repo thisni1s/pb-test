@@ -105,13 +105,13 @@ export default function TopBar({ username, logout }: Props) {
     return (
     <Dialog open={info} onClose={() => { setInfo(false) }}>
         <DialogTitle>
-          Simple Time
+          Zeitfinder
         </DialogTitle>
         <DialogContent>
         <Stack spacing={1}>
           <Typography>Version 0.1</Typography>
-          <Typography>Quelltext hier: https://github.com/thisni1s/pb-test/</Typography>
-          <Typography>Fehler hier melden: https://github.com/thisni1s/pb-test/issues</Typography>
+          <Typography>Quelltext hier: https://github.com/thisni1s/zeitfinder</Typography>
+          <Typography>Fehler hier melden: https://github.com/thisni1s/zeitfinder/issues</Typography>
 
         </Stack>
         </DialogContent>
@@ -127,7 +127,7 @@ export default function TopBar({ username, logout }: Props) {
     <AppBar position='fixed' sx={{ maxHeight: '10%' }}>
       <Toolbar>
         <Typography variant='h6' component='div' sx={{ flexGrow: 1, ml: 2 }}>
-          Simple Time
+          Zeitfinder
         </Typography>
         <Tooltip title="Einstellungen">
           <IconButton onClick={handleOpenUserMenu}><Avatar>{Array.from(username)[0]}</Avatar></IconButton>
@@ -148,8 +148,8 @@ export default function TopBar({ username, logout }: Props) {
           <MenuItem key={'changePassword'} onClick={() => { setDialog(true) }}>
             <Typography>Passwort ändern</Typography>
           </MenuItem>
-          <MenuItem key={'logout'} onClick={handleLogout}>
-            <LogoutIcon sx={{ pr: 1 }}/> <Typography textAlign="center">Logout</Typography>
+          <MenuItem key={'info'} onClick={() => { setInfo(true) }}>
+            <InfoIcon sx={{ pr: 1 }}/> <Typography textAlign="center"> Info </Typography>
           </MenuItem>
           <MenuItem key={'theme'} onClick={changeTheme}>
             {
@@ -158,8 +158,8 @@ export default function TopBar({ username, logout }: Props) {
                 : <> <LightModeIcon/> <ArrowForwardIcon/> <DarkModeIcon/></>
             }
           </MenuItem>
-          <MenuItem key={'info'} onClick={() => { setInfo(true) }}>
-            <InfoIcon sx={{ pr: 1 }}/> <Typography textAlign="center"> Info </Typography>
+          <MenuItem key={'logout'} onClick={handleLogout}>
+            <LogoutIcon sx={{ pr: 1 }}/> <Typography textAlign="center">Logout</Typography>
           </MenuItem>
         </Menu>
       </Toolbar>
