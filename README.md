@@ -1,4 +1,4 @@
-# Simple Time
+# Zeitfinder
 
 System zur Eintragung von Arbeitszeiten in Vereinen basierend auf erstellten Aufgaben
 
