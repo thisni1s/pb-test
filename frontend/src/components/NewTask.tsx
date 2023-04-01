@@ -1,72 +1,73 @@
-import React, { useState } from 'react';
-import { Dialog, AppBar, Toolbar, IconButton, Typography, Button, Stack, TextField, Switch } from '@mui/material';
-import { Task } from '../models/Task';
-import CloseIcon from '@mui/icons-material/Close';
-import { WorkEntry } from '../models/WorkEntry';
-
+import React, { useState } from 'react'
+import { Dialog, AppBar, Toolbar, IconButton, Typography, Button, Stack, TextField, Switch } from '@mui/material'
+import { taskFromRecord, type Task } from '../models/Task'
+import CloseIcon from '@mui/icons-material/Close'
+import { type WorkEntry } from '../models/WorkEntry'
+import { NumericFormat } from 'react-number-format'
+import { checkNum } from '../helpers'
 
 interface Props {
-    userid: string,
-    visible: boolean
-    setVisible: (state: boolean) => void,
-    createEntry: (data: Task) => Promise<Task>,
-    createWorkEntry: (data: WorkEntry) => Promise<boolean>,
+  userid: string
+  visible: boolean
+  setVisible: (state: boolean) => void
+  createEntry: (data: Task) => Promise<Task>
+  createWorkEntry: (data: WorkEntry) => Promise<boolean>
 }
 
-export default function NewTask({ userid, visible, setVisible, createEntry, createWorkEntry }: Props ) {
-    const [title, setTitle] = useState<string>('');
-    const [description, setDiscription] = useState<string>('');
-    const [spendMin, setSpendMin] = useState<number>(0);
-    const [done, setDone] = useState<boolean>(false);
-    const [claim, setClaim] = useState<boolean>(false);
+export default function NewTask({ userid, visible, setVisible, createEntry, createWorkEntry }: Props) {
+  const [title, setTitle] = useState<string>('')
+  const [description, setDiscription] = useState<string>('')
+  const [spendMin, setSpendMin] = useState<number>(0)
+  const [done, setDone] = useState<boolean>(false)
+  const [claim, setClaim] = useState<boolean>(false)
 
-    async function handleClose(save: boolean) {
-      console.log('close!!!', save);
-      if (save) {
-        //sanity checks
-        if(title.length === 0 || (done && spendMin <= 0)) {
-          alert('Titel muss gesetzt sein. Wenn die Aufgabe schon erledigt ist muss eine Dauer angegeben werden die größer 0 ist!');
-        } else {
-            const data = {
-                'creator': userid,
-                'claimed': (claim || done) ? [userid] : [],
-                'title': title,
-                'description': description,
-                'done': done,
-            } as Task;  
-          const task = await createEntry(data);
-          if(task.id !== '' && task !== undefined && done) {
-            await createWorkEntry({'user': userid, 'task': task.id || '', 'minutes': spendMin, 'date': ''});
-          }
-          if (task.id === undefined) {
-            alert('error creating task');
-          }          
-          setVisible(false);
-          resetState();
-        }
+  async function handleClose (save: boolean) {
+    console.log('close!!!', save)
+    if (save) {
+      // sanity checks
+      if (title.length === 0 || (done && spendMin <= 0)) {
+        alert('Titel muss gesetzt sein. Wenn die Aufgabe schon erledigt ist muss eine Dauer angegeben werden die größer 0 ist!')
       } else {
-        setVisible(false);
-        resetState();
-        console.log('visible is false');
-      }        
+        const data = taskFromRecord({
+          creator: userid,
+          claimed: (claim || done) ? [userid] : [],
+          title,
+          description,
+          done
+        })
+        const task = await createEntry(data)
+        if (task.id !== '' && task !== undefined && done) {
+          await createWorkEntry({ user: userid, task: task.id ?? '', minutes: spendMin, date: '' })
+        }
+        if (task.id === undefined) {
+          alert('error creating task')
+        }
+        setVisible(false)
+        resetState()
+      }
+    } else {
+      setVisible(false)
+      resetState()
+      console.log('visible is false')
     }
+  }
 
-    function resetState() {
-      setTitle('');
-      setDiscription('');
-      setSpendMin(0);
-      setDone(false);
-      setClaim(false);
-    }
+  function resetState() {
+    setTitle('')
+    setDiscription('')
+    setSpendMin(0)
+    setDone(false)
+    setClaim(false)
+  }
 
-    return (
-      <Dialog fullScreen open={visible} onClose={() => handleClose(false)}>
+  return (
+      <Dialog fullScreen open={visible} onClose={async () => { await handleClose(false) }}>
         <AppBar sx={{ position: 'relative' }}>
           <Toolbar>
             <IconButton
               edge='start'
               color='inherit'
-              onClick={() => handleClose(false)}
+              onClick={async () => { await handleClose(false) }}
               aria-label='close'
             >
               <CloseIcon />
@@ -74,17 +75,17 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
             <Typography sx={{ ml: 2, flex: 1 }} variant='h6' component='div'>
               Neue Aufgabe erstellen
             </Typography>
-            <Button autoFocus color='inherit' onClick={() => handleClose(true)}>
+            <Button autoFocus color='inherit' onClick={async () => { await handleClose(true) }}>
               Speichern
             </Button>
           </Toolbar>
         </AppBar>
-        <Stack spacing={2} sx={{mt: 2, ml: 2, mr: 2, display: 'flex'}}>
+        <Stack spacing={2} sx={{ mt: 2, ml: 2, mr: 2, display: 'flex' }}>
           <TextField
             placeholder='Titel'
             label='Titel'
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => { setTitle(e.target.value) }}
           />
           <TextField
             placeholder='Description'
@@ -92,38 +93,41 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
             multiline
             rows={4}
             value={description}
-            onChange={(e) => setDiscription(e.target.value)}
+            onChange={(e) => { setDiscription(e.target.value) }}
           />
-          <Stack direction='row' sx={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-            <Typography sx={{flexGrow: 1}}>Aufgabe ist bereits Erledigt</Typography>
+          <Stack direction='row' sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Typography sx={{ flexGrow: 1 }}>Aufgabe ist bereits Erledigt</Typography>
             <Switch
               checked={done}
-              onChange={(e) => setDone(e.target.checked)}
+              onChange={(e) => { setDone(e.target.checked) }}
               inputProps={{ 'aria-label': 'controlled' }}
             />
           </Stack>
           {
-            done ? 
-              <TextField
-                type='number'
-                placeholder='0'
-                label='Duration minutes'
-                value={spendMin}
-                onChange={(e) => setSpendMin(Number(e.target.value))}
-                sx={{mb: 2}}
+            done
+              ? <NumericFormat
+                  customInput={TextField}
+                  onValueChange={(values) => { setSpendMin(Number(values.value)) }}
+                  value={spendMin}
+                  isAllowed={(values) => {
+                    const { floatValue } = values
+                    return checkNum(floatValue ?? 1)
+                  }}
+                  // you can define additional custom props that are all forwarded to the customInput e. g.
+                  variant="outlined"
+                  label='Arbeitszeit (Minuten)'
+                  sx={{ mb: 2 }}
               />
-              :
-              <Stack direction='row' sx={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-                <Typography sx={{flexGrow: 1}}>Aufgabe für mich vormerken?</Typography>
+              : <Stack direction='row' sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Typography sx={{ flexGrow: 1 }}>Aufgabe für mich vormerken?</Typography>
                 <Switch
                   checked={claim}
-                  onChange={(e) => setClaim(e.target.checked)}
+                  onChange={(e) => { setClaim(e.target.checked) }}
                   inputProps={{ 'aria-label': 'controlled' }}
                 />
               </Stack>
-          }          
+          }
         </Stack>
       </Dialog>
-    );
-
+  )
 }
