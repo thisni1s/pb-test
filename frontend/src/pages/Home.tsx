@@ -16,9 +16,10 @@ import AddIcon from '@mui/icons-material/Add'
 import { type WorkEntry, workEntryFromRecord } from '../models/WorkEntry'
 import { formatTime, getUsernameForUserid, sanitizeTime } from '../helpers'
 
+import { baseUrl } from '../../config'
+
 export default function Home() {
-  const baseurl = 'https://base.jn2p.de'
-  const pb = new PocketBase(baseurl)
+  const pb = new PocketBase(baseUrl)
   const navigate = useNavigate()
   const [tasks, setTasks] = useState<Task[]>([])
   const [wEntries, setWEntries] = useState<WorkEntry[]>([])

@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import Auth from './pages/Auth';
 import History from './pages/History';
 import Statistics from './pages/Statistics';
+import { baseUrl } from '../config'
 
 const darkTheme = createTheme({
   palette: {
@@ -37,7 +38,7 @@ export const ChPassContext = createContext();
 
 function App() {
   const [themeName, setThemeName] = useState('dark');
-  const pb = new PocketBase('https://base.jn2p.de');
+  const pb = new PocketBase(baseUrl);
 
   const theme = getTheme(themeName);
 

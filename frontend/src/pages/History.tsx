@@ -10,11 +10,12 @@ import { type Task, taskFromRecord } from '../models/Task'
 import { type WorkEntry, workEntryFromRecord } from '../models/WorkEntry'
 import HistoryCard from '../components/HistoryCard'
 
+import { baseUrl } from '../../config'
+
 type WTask = [Task, WorkEntry]
 
 export default function History() {
-  const baseurl = 'https://base.jn2p.de'
-  const pb = new PocketBase(baseurl)
+  const pb = new PocketBase(baseUrl)
   const navigate = useNavigate()
   const [history, setHistory] = useState<WTask[]>([])
 

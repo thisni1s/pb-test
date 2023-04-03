@@ -8,6 +8,8 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import LogoutIcon from '@mui/icons-material/Logout'
 import InfoIcon from '@mui/icons-material/Info'
 
+import { version } from '../../config'
+
 interface Props {
   username: string
   logout: () => void
@@ -109,7 +111,7 @@ export default function TopBar({ username, logout }: Props) {
         </DialogTitle>
         <DialogContent>
         <Stack spacing={1}>
-          <Typography>Version 0.1</Typography>
+          <Typography>Version {version}</Typography>
           <Typography>Quelltext hier: https://github.com/thisni1s/zeitfinder</Typography>
           <Typography>Fehler hier melden: https://github.com/thisni1s/zeitfinder/issues</Typography>
 

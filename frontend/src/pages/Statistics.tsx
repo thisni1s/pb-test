@@ -15,9 +15,10 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ListIcon from '@mui/icons-material/List'
 import UserWorkInfo from '../components/UserWorkInfo'
 
+import { baseUrl } from '../../config'
+
 export default function Statistics() {
-  const baseurl = 'https://base.jn2p.de'
-  const pb = new PocketBase(baseurl)
+  const pb = new PocketBase(baseUrl)
   const navigate = useNavigate()
   const [userEntries, setUserEntries] = useState<Map<string, WTask[]>>(new Map<string, WTask[]>())
   const [offset, setOffset] = useState<number>(0)

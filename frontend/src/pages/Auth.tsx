@@ -11,12 +11,14 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import Typography from '@mui/material/Typography'
 import Container from '@mui/material/Container'
 
+import { baseUrl } from '../../config'
+
 function Auth() {
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
   const pwRef = useRef(null)
-  const pb = new PocketBase('https://base.jn2p.de')
+  const pb = new PocketBase(baseUrl)
   const navigate = useNavigate()
 
   async function login(username: string, password: string) {
