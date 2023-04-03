@@ -10,7 +10,7 @@ import { type Task, taskFromRecord } from '../models/Task'
 import { type WorkEntry, workEntryFromRecord } from '../models/WorkEntry'
 import HistoryCard from '../components/HistoryCard'
 
-import { baseUrl } from '../../config'
+import { baseUrl } from '../config'
 
 type WTask = [Task, WorkEntry]
 

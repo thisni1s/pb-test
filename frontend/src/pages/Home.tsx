@@ -16,7 +16,7 @@ import AddIcon from '@mui/icons-material/Add'
 import { type WorkEntry, workEntryFromRecord } from '../models/WorkEntry'
 import { formatTime, getUsernameForUserid, sanitizeTime } from '../helpers'
 
-import { baseUrl } from '../../config'
+import { baseUrl } from '../config'
 
 export default function Home() {
   const pb = new PocketBase(baseUrl)

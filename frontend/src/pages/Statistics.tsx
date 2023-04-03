@@ -15,7 +15,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ListIcon from '@mui/icons-material/List'
 import UserWorkInfo from '../components/UserWorkInfo'
 
-import { baseUrl } from '../../config'
+import { baseUrl } from '../config'
 
 export default function Statistics() {
   const pb = new PocketBase(baseUrl)

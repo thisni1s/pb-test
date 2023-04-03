@@ -8,7 +8,7 @@ import Home from './pages/Home';
 import Auth from './pages/Auth';
 import History from './pages/History';
 import Statistics from './pages/Statistics';
-import { baseUrl } from '../config'
+import { baseUrl } from './config'
 
 const darkTheme = createTheme({
   palette: {
