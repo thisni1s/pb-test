@@ -14,7 +14,7 @@ import TopBar from '../components/TopBar'
 
 import AddIcon from '@mui/icons-material/Add'
 import { type WorkEntry, workEntryFromRecord } from '../models/WorkEntry'
-import { formatTime, getUsernameForUserid, sanitizeTime } from '../helpers'
+import { formatTime, getUsernameForUserid, sanitizeTime, arrayHasId } from '../helpers'
 
 import { baseUrl } from '../config'
 
@@ -73,7 +73,7 @@ export default function Home() {
     try {
       const time = moment().subtract(1, 'week')
       let taskList: any[] = await pb.collection('tasks').getFullList(200, {
-        filter: `(done=false)||(done=true&&updated>="${formatTime(time)}")`,
+        filter: `((private=true&&creator="${pb.authStore.model?.id ?? ''}")||private=false)&&((done=false)||(done=true&&updated>="${formatTime(time)}"))`,
         expand: 'creator,claimed'
       })
       taskList = taskList.map(task => {
@@ -104,19 +104,21 @@ export default function Home() {
 
   function handleEvent(event: RecordSubscription<Record>) {
     const changedTask = taskFromRecord({ ...event.record, username: getUNamesWrapper(event.record.creator ?? '') })
-    console.log('i am listening, ', event)
-    setTasks(prevstate => {
-      switch (event.action) {
-        case 'create':
-          return [...prevstate, changedTask]
-        case 'delete':
-          return prevstate.filter(el => el.id !== event.record.id)
-        case 'update':
-          return prevstate.map(el => el.id === event.record.id ? changedTask : el)
-        default:
-          return prevstate
-      }
-    })
+    if (!(changedTask.private === true && changedTask.creator !== pb.authStore.model?.id)) {
+      console.log('i am listening, ', event)
+      setTasks(prevstate => {
+        switch (event.action) {
+          case 'create':
+            return [...prevstate, changedTask]
+          case 'delete':
+            return prevstate.filter(el => el.id !== event.record.id)
+          case 'update':
+            return arrayHasId(prevstate, changedTask) ? prevstate.map(el => el.id === event.record.id ? changedTask : el) : [...prevstate, changedTask]
+          default:
+            return prevstate
+        }
+      })
+    } 
   }
 
   function handleWEntryEvent(event: RecordSubscription<Record>) {
@@ -211,6 +213,19 @@ export default function Home() {
     }
   }
 
+  async function changeVisibility(id: string) {
+    const task = tasks.find(el => el.id === id)
+    const userid = pb.authStore.model?.id ?? ''
+    if (task !== undefined && userid !== '') {
+      if(task.private) {
+        task.private = false
+      } else {
+        task.private = true
+      }
+      await updateTask(task)
+    }
+  }
+
   function getDoneOrClaimed(claimed: string[]) {
     // console.log('called');
     // console.log('claimed: ', claimed);
@@ -229,12 +244,12 @@ export default function Home() {
 
   function getTaskCards(finished: boolean) {
     return finished
-      ? tasks.filter(task => task.done)
+      ? tasks.filter(task => (task.done && !task.private))
         .map(task => { return { task, doneBy: getDoneOrClaimed(task.claimed), finishedByMe: getFinishedByMe(task.id ?? ''), creatorName: getUNamesWrapper(task.creator) } })
-        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={task.creatorName} doneClaimNames={task.doneBy} fByMe={task.finishedByMe}/> })
+        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} changeVisibility={changeVisibility} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={task.creatorName} doneClaimNames={task.doneBy} fByMe={task.finishedByMe}/> })
       : tasks.filter(task => !task.done)
         .map(task => { return { task, claimedBy: getDoneOrClaimed(task.claimed) } })
-        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={getUNamesWrapper(task.task.creator)} doneClaimNames={task.claimedBy}/> })
+        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} changeVisibility={changeVisibility} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={getUNamesWrapper(task.task.creator)} doneClaimNames={task.claimedBy}/> })
   }
 
   async function createEntry(data: Task): Promise<Task> {

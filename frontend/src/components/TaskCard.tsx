@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Card, CardContent, Typography, Stack, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, ButtonGroup } from '@mui/material'
+import { Card, CardContent, Typography, Stack, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, ButtonGroup, Tooltip } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2' // Grid version 2
 import { NumericFormat } from 'react-number-format'
 import { type Task } from '../models/Task'
@@ -8,6 +8,8 @@ import CheckIcon from '@mui/icons-material/Check'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 interface Props {
   userid: string
@@ -16,6 +18,7 @@ interface Props {
   fByMe?: boolean
   creatorName: string
   deleteEntry: (id: string) => void
+  changeVisibility: (id: string) => void
   claim: (id: string) => void
   finish: (id: string, duration: number) => void
 }
@@ -23,7 +26,7 @@ interface ClaimProps {
   single: boolean
 }
 
-export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorName, deleteEntry, claim, finish }: Props) {
+export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorName, deleteEntry, changeVisibility, claim, finish }: Props) {
   const [dialog, setDialog] = useState<boolean>(false)
   const [delDia, setDelDia] = useState<boolean>(false)
   const [duration, setDuration] = useState<number>(0)
@@ -42,6 +45,10 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
     claim(task.id ?? '')
   }
 
+  function handleVisibilityChange() {
+    changeVisibility(task.id ?? '')
+  }
+
   function ClaimButton({ single }: ClaimProps) {
     const sx = single ? { flexGrow: 1 } : {}
     return (
@@ -53,10 +60,19 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
     const claimedStrEnd = task.claimed.length > 1 ? ' u.a.' : ''
     const claimedStr = doneClaimNames[0] + claimedStrEnd
     return (
-        <ButtonGroup variant='outlined' aria-label='claim-button-group' size='small' sx={{ flexGrow: 1 }}>
-          <Button disabled sx={{ overflow: 'hidden', flexGrow: 1 }}>{claimedStr}</Button>
-          <ClaimButton single={false}/>
-        </ButtonGroup>
+      <ButtonGroup variant='outlined' aria-label='claim-button-group' size='small' sx={{ flexGrow: 1 }}>
+        <Button disabled sx={{ overflow: 'hidden', flexGrow: 1 }}>{claimedStr}</Button>
+        <ClaimButton single={false}/>
+      </ButtonGroup>
+    )
+  }
+
+  function UserIsCreator() {
+    return (
+      <Stack direction='row' spacing={1} sx={{ display: 'flex', mt: 1 }}>
+        <IconButton aria-label='delete' size='small' onClick={() => { setDelDia(true) }}><DeleteIcon fontSize='small'/></IconButton>
+        <IconButton aria-label='delete' size='small' onClick={() => { handleVisibilityChange() }}> {task.private ? <Tooltip title="Privat"><VisibilityOffIcon fontSize='small'/></Tooltip> : <Tooltip title="Öffentlich"><VisibilityIcon fontSize='small'/></Tooltip>} </IconButton>
+      </Stack>
     )
   }
 
@@ -70,7 +86,7 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
           }
           <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { setDialog(true) }}><CheckIcon fontSize='small'/></Button>
           {
-            task.creator === userid ? <IconButton aria-label='delete' size='small' onClick={() => { setDelDia(true) }}><DeleteIcon fontSize='small'/></IconButton> : <></>
+            task.creator === userid ? UserIsCreator() : <></>
           }
         </Stack>
     )

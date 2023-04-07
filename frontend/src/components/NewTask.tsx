@@ -20,6 +20,7 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
   const [spendMin, setSpendMin] = useState<number>(0)
   const [done, setDone] = useState<boolean>(false)
   const [claim, setClaim] = useState<boolean>(false)
+  const [priv, setPriv] = useState<boolean>(false)
 
   async function handleClose (save: boolean) {
     console.log('close!!!', save)
@@ -33,7 +34,8 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
           claimed: (claim || done) ? [userid] : [],
           title,
           description,
-          done
+          done,
+          private: priv
         })
         const task = await createEntry(data)
         if (task.id !== '' && task !== undefined && done) {
@@ -95,6 +97,14 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
             value={description}
             onChange={(e) => { setDiscription(e.target.value) }}
           />
+          <Stack direction='row' sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Typography sx={{ flexGrow: 1 }}>Private Aufgabe</Typography>
+            <Switch
+              checked={priv}
+              onChange={(e) => { setPriv(e.target.checked) }}
+              inputProps={{ 'aria-label': 'controlled' }}
+            />
+          </Stack>
           <Stack direction='row' sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <Typography sx={{ flexGrow: 1 }}>Aufgabe ist bereits Erledigt</Typography>
             <Switch
