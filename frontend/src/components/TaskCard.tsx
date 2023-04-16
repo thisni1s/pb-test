@@ -49,6 +49,10 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
     claim(task.id ?? '')
   }
 
+  function handleVisibilityChange() {
+    changeVisibility(task.id ?? '')
+  }
+
   function ClaimButton({ single }: ClaimProps) {
     const sx = single ? { flexGrow: 1 } : {}
     return (
@@ -60,10 +64,19 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
     const claimedStrEnd = task.claimed.length > 1 ? ' u.a.' : ''
     const claimedStr = doneClaimNames[0] + claimedStrEnd
     return (
-        <ButtonGroup variant='outlined' aria-label='claim-button-group' size='small' sx={{ flexGrow: 1 }}>
-          <Button disabled sx={{ overflow: 'hidden', flexGrow: 1 }}>{claimedStr}</Button>
-          <ClaimButton single={false}/>
-        </ButtonGroup>
+      <ButtonGroup variant='outlined' aria-label='claim-button-group' size='small' sx={{ flexGrow: 1 }}>
+        <Button disabled sx={{ overflow: 'hidden', flexGrow: 1 }}>{claimedStr}</Button>
+        <ClaimButton single={false}/>
+      </ButtonGroup>
+    )
+  }
+
+  function UserIsCreator() {
+    return (
+      <Stack direction='row' spacing={1} sx={{ display: 'flex', mt: 1 }}>
+        <IconButton aria-label='delete' size='small' onClick={() => { setDelDia(true) }}><DeleteIcon fontSize='small'/></IconButton>
+        <IconButton aria-label='delete' size='small' onClick={() => { handleVisibilityChange() }}> {task.private ? <Tooltip title="Privat"><VisibilityOffIcon fontSize='small'/></Tooltip> : <Tooltip title="Öffentlich"><VisibilityIcon fontSize='small'/></Tooltip>} </IconButton>
+      </Stack>
     )
   }
 

@@ -213,6 +213,19 @@ export default function Home() {
     }
   }
 
+  async function changeVisibility(id: string) {
+    const task = tasks.find(el => el.id === id)
+    const userid = pb.authStore.model?.id ?? ''
+    if (task !== undefined && userid !== '') {
+      if(task.private) {
+        task.private = false
+      } else {
+        task.private = true
+      }
+      await updateTask(task)
+    }
+  }
+
   function getDoneOrClaimed(claimed: string[]) {
     // console.log('called');
     // console.log('claimed: ', claimed);

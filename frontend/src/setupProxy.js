@@ -1,10 +1,11 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const { baseUrl } = require('./config');
 
 module.exports = function(app) {
   app.use(
     '/base',
     createProxyMiddleware({
-      target: 'https://base.jn2p.de',
+      target: baseUrl,
       changeOrigin: true,
     })
   );
