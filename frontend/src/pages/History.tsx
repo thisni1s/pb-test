@@ -9,12 +9,12 @@ import BotNavigation from '../components/BotNavigation'
 import { type Task, taskFromRecord } from '../models/Task'
 import { type WorkEntry, workEntryFromRecord } from '../models/WorkEntry'
 import HistoryCard from '../components/HistoryCard'
-
-import { baseUrl } from '../config'
+import config from '../config.json'
 
 type WTask = [Task, WorkEntry]
 
 export default function History() {
+  const baseUrl = config.baseUrl
   const pb = new PocketBase(baseUrl)
   const navigate = useNavigate()
   const [history, setHistory] = useState<WTask[]>([])

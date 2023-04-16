@@ -9,7 +9,7 @@ export interface Task {
   creator: string
   username: string
   claimed: string[]
-  done: boolean,
+  done: boolean
   private: boolean
 }
 
@@ -23,7 +23,7 @@ export function taskFromRecord(record: any): Task {
       claimed: record.claimed ?? [],
       done: record.done ?? false,
       username: record.username ?? '',
-      private: record.private ?? false,
+      private: record.private ?? false
     }
   } else {
     return taskFromRecord({})

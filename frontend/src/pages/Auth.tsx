@@ -10,14 +10,14 @@ import Box from '@mui/material/Box'
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import Typography from '@mui/material/Typography'
 import Container from '@mui/material/Container'
-
-import { baseUrl } from '../config'
+import config from '../config.json'
 
 function Auth() {
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
   const pwRef = useRef(null)
+  const baseUrl = config.baseUrl
   const pb = new PocketBase(baseUrl)
   const navigate = useNavigate()
 

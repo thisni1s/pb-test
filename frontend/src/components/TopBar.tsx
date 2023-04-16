@@ -1,14 +1,13 @@
 import React, { useState, type MouseEvent, useContext } from 'react'
 import { AppBar, Toolbar, Typography, IconButton, Avatar, Tooltip, Menu, MenuItem, useTheme, Dialog, Button, DialogActions, DialogContent, DialogTitle, TextField, Stack } from '@mui/material'
 import { ThemeContext, ChPassContext } from '../App'
+import config from '../config.json'
 
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import LogoutIcon from '@mui/icons-material/Logout'
 import InfoIcon from '@mui/icons-material/Info'
-
-import { version } from '../config'
 
 interface Props {
   username: string
@@ -111,7 +110,7 @@ export default function TopBar({ username, logout }: Props) {
         </DialogTitle>
         <DialogContent>
         <Stack spacing={1}>
-          <Typography>Version {version}</Typography>
+          <Typography>Version {config.version}</Typography>
           <Typography>Quelltext hier: https://github.com/thisni1s/zeitfinder</Typography>
           <Typography>Fehler hier melden: https://github.com/thisni1s/zeitfinder/issues</Typography>
 

@@ -9,15 +9,15 @@ import BotNavigation from '../components/BotNavigation'
 import { taskFromRecord, type WTask } from '../models/Task'
 import { workEntryFromRecord } from '../models/WorkEntry'
 import { formatTime, getUsernameForUserid, sanitizeTime } from '../helpers'
+import config from '../config.json'
 
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ListIcon from '@mui/icons-material/List'
 import UserWorkInfo from '../components/UserWorkInfo'
 
-import { baseUrl } from '../config'
-
 export default function Statistics() {
+  const baseUrl = config.baseUrl
   const pb = new PocketBase(baseUrl)
   const navigate = useNavigate()
   const [userEntries, setUserEntries] = useState<Map<string, WTask[]>>(new Map<string, WTask[]>())

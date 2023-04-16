@@ -34,5 +34,5 @@ export function checkNum (num: number): boolean {
 }
 
 export function arrayHasId (arr: any[], obj: any): boolean {
-  return arr.find(el => el.id === obj.id) !== undefined ? true : false
+  return arr.find(el => el.id === obj.id) !== undefined
 }

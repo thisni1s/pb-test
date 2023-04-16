@@ -11,14 +11,14 @@ import TaskCard from '../components/TaskCard'
 import NewTask from '../components/NewTask'
 import BotNavigation from '../components/BotNavigation'
 import TopBar from '../components/TopBar'
+import config from '../config.json'
 
 import AddIcon from '@mui/icons-material/Add'
 import { type WorkEntry, workEntryFromRecord } from '../models/WorkEntry'
 import { formatTime, getUsernameForUserid, sanitizeTime, arrayHasId } from '../helpers'
 
-import { baseUrl } from '../config'
-
 export default function Home() {
+  const baseUrl = config.baseUrl
   const pb = new PocketBase(baseUrl)
   const navigate = useNavigate()
   const [tasks, setTasks] = useState<Task[]>([])
@@ -232,6 +232,19 @@ export default function Home() {
     const res = claimed.map(id => getUNamesWrapper(id))
     // console.log('res: ', res);
     return res
+  }
+
+  async function changeVisibility(id: string) {
+    const task = tasks.find(el => el.id === id)
+    const userid = pb.authStore.model?.id ?? ''
+    if (task !== undefined && userid !== '') {
+      if(task.private) {
+        task.private = false
+      } else {
+        task.private = true
+      }
+      await updateTask(task)
+    }
   }
 
   function getFinishedByMe(taskid: string) {

@@ -8,7 +8,7 @@ import Home from './pages/Home';
 import Auth from './pages/Auth';
 import History from './pages/History';
 import Statistics from './pages/Statistics';
-import { baseUrl } from './config'
+import config from './config.json'
 
 const darkTheme = createTheme({
   palette: {
@@ -38,6 +38,7 @@ export const ChPassContext = createContext();
 
 function App() {
   const [themeName, setThemeName] = useState('dark');
+  const baseUrl = config.baseUrl
   const pb = new PocketBase(baseUrl);
 
   const theme = getTheme(themeName);
