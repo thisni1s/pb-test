@@ -10,6 +10,7 @@ import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+import { checkNum } from '../helpers'
 
 interface Props {
   userid: string
@@ -69,9 +70,9 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
 
   function UserIsCreator() {
     return (
-      <Stack direction='row' spacing={1} sx={{ display: 'flex', mt: 1 }}>
-        <IconButton aria-label='delete' size='small' onClick={() => { setDelDia(true) }}><DeleteIcon fontSize='small'/></IconButton>
-        <IconButton aria-label='delete' size='small' onClick={() => { handleVisibilityChange() }}> {task.private ? <Tooltip title="Privat"><VisibilityOffIcon fontSize='small'/></Tooltip> : <Tooltip title="Öffentlich"><VisibilityIcon fontSize='small'/></Tooltip>} </IconButton>
+      <Stack direction='row' spacing={1} sx={{ display: 'flex', mt: 1}}>
+        <IconButton aria-label='delete' size='small' sx={{flexGrow: 1}} onClick={() => { setDelDia(true) }}><DeleteIcon fontSize='small'/></IconButton>
+        <IconButton aria-label='delete' size='small' sx={{flexGrow: 1}} onClick={() => { handleVisibilityChange() }}> {task.private ? <Tooltip title="Privat"><VisibilityOffIcon fontSize='small'/></Tooltip> : <Tooltip title="Öffentlich"><VisibilityIcon fontSize='small'/></Tooltip>} </IconButton>
       </Stack>
     )
   }
@@ -95,13 +96,25 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
   function finishedTask() {
     return (
         <>
-        <br/>
         <Typography color='text.secondary' variant='caption' gutterBottom>Erledigt von: {doneClaimNames?.join(', ')}</Typography>
         <Stack direction='row' spacing={2} sx={{ display: 'flex', mt: 1 }}>
           <Button disabled={fByMe} variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { setDialog(true) }}>Zeit nachtragen</Button>
         </Stack>
         </>
     )
+  }
+
+  function publicPrivateText() {
+    if(task.creator !== userid) {
+      return <></>
+    } else {
+      const text = task.private ? 'Privat' : 'Öffentlich'
+      return (
+        <Typography color='text.secondary' variant='caption'>
+          {text}
+        </Typography>
+      )
+    }
   }
 
   return (
@@ -114,9 +127,12 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
             <Typography variant='body2'>
               {task.description}
             </Typography>
-            <Typography color='text.secondary' variant='caption'>
-                Erstellt von: {task.creator === userid ? 'Dir' : creatorName}
-            </Typography>
+            <Stack direction={'row'} spacing={1} sx={{ display: 'flex', justifyContent: 'space-between'}}>
+              <Typography color='text.secondary' variant='caption'>
+                  Erstellt von: {task.creator === userid ? 'Dir' : creatorName}
+              </Typography>
+              {publicPrivateText()}            
+            </Stack>
             {!task.done ? unfinishedTask() : finishedTask()}
             <Dialog open={dialog} onClose={() => { setDialog(false) }}>
               <DialogTitle>
@@ -130,6 +146,10 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
                   customInput={TextField}
                   onValueChange={(values) => { setDuration(Number(values.value)) }}
                   value={duration}
+                  isAllowed={(values) => {
+                    const { floatValue } = values
+                    return checkNum(floatValue ?? 1)
+                  }}
                   // you can define additional custom props that are all forwarded to the customInput e. g.
                   variant="outlined"
                   label='Arbeitszeit (Minuten)'
