@@ -20,6 +20,14 @@ const lightTheme = createTheme({
   palette: {
     mode: 'light',
   },
+  components: {
+    MuiPaper: {
+      defaultProps: {
+        elevation: 0,
+        variant: 'outlined'
+      }
+    }
+  }
 });
 
 function getTheme(themeName) {
