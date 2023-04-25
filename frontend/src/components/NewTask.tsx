@@ -1,10 +1,14 @@
 import React, { useState } from 'react'
-import { Dialog, AppBar, Toolbar, IconButton, Typography, Button, Stack, TextField, Switch } from '@mui/material'
+import { Dialog, AppBar, Toolbar, IconButton, Typography, Button, Stack, TextField, Switch, Chip } from '@mui/material'
 import { taskFromRecord, type Task } from '../models/Task'
 import CloseIcon from '@mui/icons-material/Close'
 import { type WorkEntry } from '../models/WorkEntry'
 import { NumericFormat } from 'react-number-format'
-import { checkNum } from '../helpers'
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import 'moment/locale/de';
+import moment from 'moment'
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
+import { checkNum, formatUploadTime } from '../helpers'
 
 interface Props {
   userid: string
@@ -21,6 +25,7 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
   const [done, setDone] = useState<boolean>(false)
   const [claim, setClaim] = useState<boolean>(false)
   const [priv, setPriv] = useState<boolean>(false)
+  const [date, setDate] = useState<moment.Moment>(moment())
 
   async function handleClose (save: boolean) {
     console.log('close!!!', save)
@@ -35,11 +40,11 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
           title,
           description,
           done,
-          private: priv
+          private: priv,          
         })
         const task = await createEntry(data)
         if (task.id !== '' && task !== undefined && done) {
-          await createWorkEntry({ user: userid, task: task.id ?? '', minutes: spendMin, date: '' })
+          await createWorkEntry({ user: userid, task: task.id ?? '', minutes: spendMin, date: formatUploadTime(date) })
         }
         if (task.id === undefined) {
           alert('error creating task')
@@ -60,6 +65,18 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
     setSpendMin(0)
     setDone(false)
     setClaim(false)
+    setPriv(false)
+    setDate(moment())
+  }
+
+  function dateChange(time: moment.Moment | null) {
+    if (time !== null) {
+      setDate(time)
+    }
+  }
+
+  function setChipTime(hours: number) {
+    setSpendMin(hours * 60)
   }
 
   return (
@@ -115,7 +132,15 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
           </Stack>
           {
             done
-              ? <NumericFormat
+              ? 
+              <>
+                <Stack direction={'row'} spacing={1} sx={{justifyContent: 'center'}}>
+                    <Chip label="2h" onClick={() => setChipTime(2)}/>
+                    <Chip label="3h" onClick={() => setChipTime(3)}/>
+                    <Chip label="4h" onClick={() => setChipTime(4)}/>
+                    <Chip label="5h" onClick={() => setChipTime(5)}/>
+                </Stack>
+                <NumericFormat
                   customInput={TextField}
                   onValueChange={(values) => { setSpendMin(Number(values.value)) }}
                   value={spendMin}
@@ -127,8 +152,13 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
                   variant="outlined"
                   label='Arbeitszeit (Minuten)'
                   sx={{ mb: 2 }}
-              />
-              : <Stack direction='row' sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                />
+                <LocalizationProvider dateAdapter={AdapterMoment} adapterLocale={'de'}>
+                  <DatePicker label="Datum" defaultValue={date} onChange={(e) => dateChange(e)} value={date} disableFuture/>
+                </LocalizationProvider>
+              </>
+              : 
+              <Stack direction='row' sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Typography sx={{ flexGrow: 1 }}>Aufgabe für mich vormerken?</Typography>
                 <Switch
                   checked={claim}

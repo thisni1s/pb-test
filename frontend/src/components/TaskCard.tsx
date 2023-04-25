@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Card, CardContent, Typography, Stack, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, ButtonGroup, Tooltip } from '@mui/material'
+import { Card, CardContent, Typography, Stack, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, Chip, DialogActions, ButtonGroup, Tooltip } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2' // Grid version 2
 import { NumericFormat } from 'react-number-format'
 import { type Task } from '../models/Task'
@@ -11,6 +11,10 @@ import RemoveIcon from '@mui/icons-material/Remove'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { checkNum } from '../helpers'
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
+import moment from 'moment'
+import 'moment/locale/de';
 
 interface Props {
   userid: string
@@ -21,7 +25,7 @@ interface Props {
   deleteEntry: (id: string) => void
   changeVisibility: (id: string) => void
   claim: (id: string) => void
-  finish: (id: string, duration: number) => void
+  finish: (id: string, duration: number, date: moment.Moment) => void
 }
 interface ClaimProps {
   single: boolean
@@ -31,6 +35,7 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
   const [dialog, setDialog] = useState<boolean>(false)
   const [delDia, setDelDia] = useState<boolean>(false)
   const [duration, setDuration] = useState<number>(0)
+  const [date, setDate] = useState<moment.Moment>(moment())
 
   function handleDelete() {
     deleteEntry(task.id ?? '')
@@ -42,7 +47,7 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
   }
 
   function handleFinish() {
-    finish(task.id ?? '', duration)
+    finish(task.id ?? '', duration, date)
     setDialog(false)
   }
 
@@ -117,6 +122,16 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
     }
   }
 
+  function dateChange(time: moment.Moment | null) {
+    if (time !== null) {
+      setDate(time)
+    }
+  }
+
+  function setChipTime(hours: number) {
+    setDuration(hours * 60)
+  }
+
   return (
       <Grid xs={12} md={4}>
         <Card>
@@ -139,23 +154,34 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
                 {task.title}
               </DialogTitle>
               <DialogContent>
-                <DialogContentText>
-                    Aufgabe als Erledigt markieren?
-                </DialogContentText>
-                <NumericFormat
-                  customInput={TextField}
-                  onValueChange={(values) => { setDuration(Number(values.value)) }}
-                  value={duration}
-                  isAllowed={(values) => {
-                    const { floatValue } = values
-                    return checkNum(floatValue ?? 1)
-                  }}
-                  // you can define additional custom props that are all forwarded to the customInput e. g.
-                  variant="outlined"
-                  label='Arbeitszeit (Minuten)'
-                  sx={{ mb: 1, mt: 2 }}
-                />
-                <DialogActions>
+                <Stack spacing={2}>
+                  <DialogContentText>
+                      Aufgabe als Erledigt markieren?
+                  </DialogContentText>
+                  <Stack direction={'row'} spacing={1} sx={{justifyContent: 'center'}}>
+                    <Chip label="2h" onClick={() => setChipTime(2)}/>
+                    <Chip label="3h" onClick={() => setChipTime(3)}/>
+                    <Chip label="4h" onClick={() => setChipTime(4)}/>
+                    <Chip label="5h" onClick={() => setChipTime(5)}/>
+                  </Stack>
+                  <NumericFormat
+                    customInput={TextField}
+                    onValueChange={(values) => { setDuration(Number(values.value)) }}
+                    value={duration}
+                    isAllowed={(values) => {
+                      const { floatValue } = values
+                      return checkNum(floatValue ?? 1)
+                    }}
+                    // you can define additional custom props that are all forwarded to the customInput e. g.
+                    variant="outlined"
+                    label='Arbeitszeit (Minuten)'
+                    sx={{ mb: 1, mt: 2 }}
+                  />
+                  <LocalizationProvider dateAdapter={AdapterMoment} adapterLocale={'de'}>
+                    <DatePicker label="Datum" defaultValue={date} onChange={(e) => dateChange(e)} value={date} disableFuture/>
+                  </LocalizationProvider>
+                </Stack>
+                <DialogActions sx={{mt: 1}}>
                   <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { setDialog(false) }}>Abbrechen</Button>
                   <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={handleFinish}>Speichern</Button>
                 </DialogActions>

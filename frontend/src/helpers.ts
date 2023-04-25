@@ -21,6 +21,14 @@ export function formatTime (time: moment.Moment): string {
   return time.format('YYYY-MM-DD hh:mm:ss')
 }
 
+export function formatUploadTime(time: moment.Moment): string {
+  return time.format('YYYY-MM-DD hh:mm:ss.SSSZ')
+}
+
+export function parseUploadTime(time: string): moment.Moment {
+  return moment(time, 'YYYY-MM-DD hh:mm:ss.SSSZ')
+}
+
 export function readableTime (time: string): string {
   return moment(time).format('DD.MM.YY')
 }

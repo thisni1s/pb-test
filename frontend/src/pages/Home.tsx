@@ -15,7 +15,7 @@ import config from '../config.json'
 
 import AddIcon from '@mui/icons-material/Add'
 import { type WorkEntry, workEntryFromRecord } from '../models/WorkEntry'
-import { formatTime, getUsernameForUserid, sanitizeTime, arrayHasId } from '../helpers'
+import { formatTime, getUsernameForUserid, sanitizeTime, arrayHasId, formatUploadTime } from '../helpers'
 
 export default function Home() {
   const baseUrl = config.baseUrl
@@ -176,7 +176,8 @@ export default function Home() {
       const data = {
         user: entry.user,
         task: entry.task,
-        minutes: entry.minutes
+        minutes: entry.minutes,
+        date: entry.date
       }
       const record = await pb.collection('work_entries').create(data)
       return true
@@ -186,7 +187,7 @@ export default function Home() {
     }
   }
 
-  async function finishTask(id: string, duration: number) {
+  async function finishTask(id: string, duration: number, date: moment.Moment) {
     const task = tasks.find(el => el.id === id)
     const userid = pb.authStore.model?.id ?? ''
     if (task !== undefined && userid !== '') {
@@ -194,7 +195,7 @@ export default function Home() {
         task.claimed.push(userid)
       }
       task.done = true
-      await createWorkEntry(workEntryFromRecord({ user: userid, task: id, minutes: duration }))
+      await createWorkEntry(workEntryFromRecord({ user: userid, task: id, minutes: duration, date: formatUploadTime(date) }))
       await updateTask(task) // this call may be uneccessary if the task has already been done and the user is already in the claimed array
     }
   }

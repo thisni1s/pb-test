@@ -10,6 +10,8 @@ import { type Task, taskFromRecord } from '../models/Task'
 import { type WorkEntry, workEntryFromRecord } from '../models/WorkEntry'
 import HistoryCard from '../components/HistoryCard'
 import config from '../config.json'
+import moment from 'moment'
+import { formatUploadTime } from '../helpers'
 
 type WTask = [Task, WorkEntry]
 
@@ -59,10 +61,11 @@ export default function History() {
     }
   }
 
-  async function changeEntry(entry: WorkEntry, newTime: number) {
+  async function changeEntry(entry: WorkEntry, newTime: number, date: moment.Moment) {
     try {
       const data = {
         minutes: newTime,
+        date: formatUploadTime(date),
         user: entry.user,
         task: entry.task
       }
