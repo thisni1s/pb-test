@@ -1,4 +1,4 @@
-import React, { useState, createContext } from 'react';
+import React, { useState, createContext, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -37,11 +37,29 @@ export const ThemeContext = createContext();
 export const ChPassContext = createContext();
 
 function App() {
-  const [themeName, setThemeName] = useState('dark');
+  const [themeName, setThemeName] = useState(getSaneThemeName());
   const baseUrl = config.baseUrl
   const pb = new PocketBase(baseUrl);
 
+  
+  useEffect(() => {
+    setThemeName(getSaneThemeName())
+  }, [])
+  
+  useEffect(() => {
+    localStorage.setItem('theme', JSON.stringify(themeName))
+  }, [themeName])
+  
   const theme = getTheme(themeName);
+  
+  function getSaneThemeName() {
+    const themeName = JSON.parse(localStorage.getItem('theme'))
+    if (themeName !== 'dark' && themeName !== 'light') {
+      return 'dark'
+    } else {
+      return themeName
+    }
+  }
 
   async function changePassword(oldPw, newPw) {
     try {
