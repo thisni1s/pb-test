@@ -100,6 +100,80 @@ func main() {
 		// or you can also use the shorter e.Router.GET("/articles/:slug", handler, middlewares...)
 		e.Router.AddRoute(echo.Route{
 			Method: http.MethodGet,
+			Path:   "/api/st_tasks/claim/:taskid",
+			Handler: func(c echo.Context) error {
+				user, _ := c.Get(apis.ContextAuthRecordKey).(*models.Record)
+				if user == nil {
+					return apis.NewForbiddenError("Only auth records can access this endpoint", nil)
+				}
+				record, err := app.Dao().FindRecordById("tasks", c.PathParam("taskid"))
+				if err != nil {
+					return apis.NewNotFoundError("The task does not exist", err)
+				}
+				claimed := record.GetStringSlice("claimed")
+				inslice := false
+				pos := 0
+				for k, v := range claimed {
+					if v == user.Id {
+						inslice = true
+						pos = k
+					}
+				}
+				if !inslice {
+					claimed = append(claimed, user.Id)
+				} else {
+					claimed[pos] = claimed[len(claimed)-1]
+					claimed = claimed[:len(claimed)-1]
+				}
+				record.Set("claimed", claimed)
+				if err := app.Dao().SaveRecord(record); err != nil {
+					return err
+				}
+
+				return c.JSON(http.StatusOK, record)
+			},
+			Middlewares: []echo.MiddlewareFunc{
+				apis.ActivityLogger(app),
+				apis.RequireRecordAuth(),
+			},
+		})
+
+		return nil
+	})
+
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		// or you can also use the shorter e.Router.GET("/articles/:slug", handler, middlewares...)
+		e.Router.AddRoute(echo.Route{
+			Method: http.MethodGet,
+			Path:   "/api/st_tasks/finish/:taskid",
+			Handler: func(c echo.Context) error {
+				record, err := app.Dao().FindRecordById("tasks", c.PathParam("taskid"))
+				if err != nil {
+					return apis.NewNotFoundError("The task does not exist", err)
+				}
+				currStatus := record.GetBool("done")
+				if !currStatus {
+					record.Set("done", true)
+				}
+				if err := app.Dao().SaveRecord(record); err != nil {
+					return err
+				}
+
+				return c.JSON(http.StatusOK, record)
+			},
+			Middlewares: []echo.MiddlewareFunc{
+				apis.ActivityLogger(app),
+				apis.RequireRecordAuth(),
+			},
+		})
+
+		return nil
+	})
+
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		// or you can also use the shorter e.Router.GET("/articles/:slug", handler, middlewares...)
+		e.Router.AddRoute(echo.Route{
+			Method: http.MethodGet,
 			Path:   "/api/st_users/:id",
 			Handler: func(c echo.Context) error {
 				record, err := app.Dao().FindRecordById("users", c.PathParam("id"))

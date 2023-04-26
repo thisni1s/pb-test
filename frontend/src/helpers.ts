@@ -1,4 +1,6 @@
 import moment from 'moment'
+import { apicallGet, HTTP_METHOD } from './callApi'
+import config from './config.json'
 
 export function sanitizeTime (mins: number): string {
   if (mins < 60) {
@@ -16,6 +18,16 @@ export function getUsernameForUserid (id: string, db: Map<string, string>): stri
     return id
   }
 }
+
+export async function apiClaimTask(taskid: string, token: string): Promise<void> {
+  console.log('claiming task')
+  await apicallGet(HTTP_METHOD.GET, config.baseUrl+'/api/st_tasks/claim/'+taskid, token)
+}
+
+export async function apiFinishTask(taskid: string, token: string): Promise<void> {
+  console.log('finishing task')
+  await apicallGet(HTTP_METHOD.GET, config.baseUrl+'/api/st_tasks/finish/'+taskid, token)
+} 
 
 export function formatTime (time: moment.Moment): string {
   return time.format('YYYY-MM-DD hh:mm:ss')

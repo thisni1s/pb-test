@@ -15,7 +15,7 @@ import config from '../config.json'
 
 import AddIcon from '@mui/icons-material/Add'
 import { type WorkEntry, workEntryFromRecord } from '../models/WorkEntry'
-import { formatTime, getUsernameForUserid, sanitizeTime, arrayHasId, formatUploadTime } from '../helpers'
+import { formatTime, getUsernameForUserid, sanitizeTime, arrayHasId, formatUploadTime, apiFinishTask, apiClaimTask } from '../helpers'
 
 export default function Home() {
   const baseUrl = config.baseUrl
@@ -192,25 +192,18 @@ export default function Home() {
     const userid = pb.authStore.model?.id ?? ''
     if (task !== undefined && userid !== '') {
       if (!task.claimed.includes(userid)) {
-        task.claimed.push(userid)
+        await apiClaimTask(task.id ?? '', pb.authStore.token)
       }
-      task.done = true
       await createWorkEntry(workEntryFromRecord({ user: userid, task: id, minutes: duration, date: formatUploadTime(date) }))
-      await updateTask(task) // this call may be uneccessary if the task has already been done and the user is already in the claimed array
+      await apiFinishTask(task.id ?? '', pb.authStore.token) // this call may be uneccessary if the task has already been done
     }
   }
 
   // this function adds the user to the claimed array or removes them if they are already in it
   async function claimTask(id: string) {
     const task = tasks.find(el => el.id === id)
-    const userid = pb.authStore.model?.id ?? ''
-    if (task !== undefined && userid !== '') {
-      if (task.claimed.includes(userid)) {
-        task.claimed = task.claimed.filter(user => user !== userid)
-      } else {
-        task.claimed.push(userid)
-      }
-      await updateTask(task)
+    if (task !== undefined) {
+      await apiClaimTask(task.id ?? '', pb.authStore.token)
     }
   }
 
