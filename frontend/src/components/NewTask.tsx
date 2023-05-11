@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Dialog, AppBar, Toolbar, IconButton, Typography, Button, Stack, TextField, Switch, Chip } from '@mui/material'
+import React, { useRef, useState } from 'react'
+import { Dialog, AppBar, Toolbar, IconButton, Typography, Button, Stack, TextField, Switch, Chip, Avatar, Input } from '@mui/material'
 import { taskFromRecord, type Task } from '../models/Task'
 import CloseIcon from '@mui/icons-material/Close'
 import { type WorkEntry } from '../models/WorkEntry'
@@ -9,6 +9,7 @@ import 'moment/locale/de';
 import moment from 'moment'
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { checkNum, formatUploadTime } from '../helpers'
+import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
 
 interface Props {
   userid: string
@@ -16,16 +17,21 @@ interface Props {
   setVisible: (state: boolean) => void
   createEntry: (data: Task) => Promise<Task>
   createWorkEntry: (data: WorkEntry) => Promise<boolean>
+  uploadPicture: (taskid: string, picture: Blob) => void
 }
 
-export default function NewTask({ userid, visible, setVisible, createEntry, createWorkEntry }: Props) {
+export default function NewTask({ userid, visible, setVisible, createEntry, createWorkEntry, uploadPicture }: Props) {
   const [title, setTitle] = useState<string>('')
   const [description, setDiscription] = useState<string>('')
   const [spendMin, setSpendMin] = useState<number>(0)
   const [done, setDone] = useState<boolean>(false)
   const [claim, setClaim] = useState<boolean>(false)
+  const [photo, setPhoto] = useState<Photo>();
+  const [pic, setPic] = useState<boolean>(false)
   const [priv, setPriv] = useState<boolean>(false)
   const [date, setDate] = useState<moment.Moment>(moment())
+  const [blob, setBlob] = useState<File>()
+  const pickerRef = useRef<HTMLInputElement>(null)
 
   async function handleClose (save: boolean) {
     console.log('close!!!', save)
@@ -43,6 +49,13 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
           private: priv,          
         })
         const task = await createEntry(data)
+        if (pic && photo !== undefined) {
+          const file = await (await fetch(photo.dataUrl ?? '')).blob()
+          uploadPicture(task.id ?? '', file)
+        }
+        if (pic && blob !== undefined) {
+          uploadPicture(task.id ?? '', blob)
+        }
         if (task.id !== '' && task !== undefined && done) {
           await createWorkEntry({ user: userid, task: task.id ?? '', minutes: spendMin, date: formatUploadTime(date) })
         }
@@ -67,6 +80,8 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
     setClaim(false)
     setPriv(false)
     setDate(moment())
+    setPhoto(undefined)
+    setPic(false)
   }
 
   function dateChange(time: moment.Moment | null) {
@@ -77,6 +92,29 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
 
   function setChipTime(hours: number) {
     setSpendMin(hours * 60)
+  }
+
+  async function picTaker() {
+    const picture = await Camera.getPhoto({
+      resultType: CameraResultType.DataUrl,
+      source: CameraSource.Prompt,
+      quality: 100,
+    })
+    setPhoto(picture)
+    setPic(true)
+  }
+
+  function clickRef() {
+    console.log('hello')
+    pickerRef.current?.click();
+  }
+
+  async function readFile() {
+    const inFile: HTMLInputElement | null = pickerRef.current
+    if (inFile !== null && inFile.files !== null) {
+      const blob = inFile.files[0] ?? null
+      setBlob(blob)
+    }
   }
 
   return (
@@ -166,6 +204,29 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
                   inputProps={{ 'aria-label': 'controlled' }}
                 />
               </Stack>
+          }
+          <Stack direction='row' sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Typography sx={{ flexGrow: 1 }}>Bild hinzufügen?</Typography>
+            <Switch
+              checked={pic}
+              onChange={(e) => { setPic(e.target.checked) }}
+              inputProps={{ 'aria-label': 'controlled' }}
+            />
+          </Stack>
+          {
+            pic ?
+              <>
+                <Button variant="text" onClick={picTaker}>Auswählen / Aufnehmen</Button>
+                <Button variant="contained" color="primary" onClick={clickRef}>upload file</Button>
+                <input ref={pickerRef} type="file" style={{ display: 'none' }} accept='image/*' onChange={readFile}/>
+                {
+                  photo !== undefined ?
+                    <Avatar variant='square' src={photo?.dataUrl} sx={{ width: 250, height: 250 }}/>
+                  : <></>
+                }
+              </>
+            :
+            <></>
           }
         </Stack>
       </Dialog>

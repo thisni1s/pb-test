@@ -79,9 +79,11 @@ export default function Home() {
       taskList = taskList.map(task => {
         return {
           ...task,
-          username: getUNamesWrapper(task.creator)
+          username: getUNamesWrapper(task.creator),
+          image: task.image !== '' ? pb.getFileUrl(task, task.image, {'thumb': '512x512'}) : ''
         }
       })
+      console.log(taskList)
       setTasks(taskList.map(task => taskFromRecord(task)))
     } catch (error) {
       console.log(error)
@@ -103,7 +105,7 @@ export default function Home() {
   }
 
   function handleEvent(event: RecordSubscription<Record>) {
-    const changedTask = taskFromRecord({ ...event.record, username: getUNamesWrapper(event.record.creator ?? '') })
+    const changedTask = taskFromRecord({ ...event.record, username: getUNamesWrapper(event.record.creator ?? ''), image: event.record.image !== '' ? pb.getFileUrl(event.record, event.record.image, {'thumb': '512x512'}) : '' })
     if (!(changedTask.private === true && changedTask.creator !== pb.authStore.model?.id)) {
       console.log('i am listening, ', event)
       setTasks(prevstate => {
@@ -240,10 +242,10 @@ export default function Home() {
     return finished
       ? tasks.filter(task => (task.done && !task.private))
         .map(task => { return { task, doneBy: getDoneOrClaimed(task.claimed), finishedByMe: getFinishedByMe(task.id ?? ''), creatorName: getUNamesWrapper(task.creator) } })
-        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} changeVisibility={changeVisibility} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={task.creatorName} doneClaimNames={task.doneBy} fByMe={task.finishedByMe}/> })
+        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} changeVisibility={changeVisibility} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={task.creatorName} doneClaimNames={task.doneBy} fByMe={task.finishedByMe} /> })
       : tasks.filter(task => !task.done)
         .map(task => { return { task, claimedBy: getDoneOrClaimed(task.claimed) } })
-        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} changeVisibility={changeVisibility} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={getUNamesWrapper(task.task.creator)} doneClaimNames={task.claimedBy}/> })
+        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} changeVisibility={changeVisibility} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={getUNamesWrapper(task.task.creator)} doneClaimNames={task.claimedBy} /> })
   }
 
   async function createEntry(data: Task): Promise<Task> {
@@ -255,6 +257,17 @@ export default function Home() {
       return taskFromRecord({})
     }
   }
+
+  async function uploadEntryPicture(taskid: string, picture: Blob) {
+    try {
+      const formData = new FormData()
+      formData.append('image', picture)
+      await pb.collection('tasks').update(taskid, formData);
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
 
   function openNewDia() {
     console.log('open new dia')
@@ -281,7 +294,7 @@ export default function Home() {
             {getTaskCards(true)}
           </Grid>
         </Stack>
-        {<NewTask userid={pb.authStore.model?.id ?? ''} visible={newDia} setVisible={setNewDia} createEntry={createEntry} createWorkEntry={createWorkEntry}/>}
+        {<NewTask userid={pb.authStore.model?.id ?? ''} visible={newDia} setVisible={setNewDia} createEntry={createEntry} createWorkEntry={createWorkEntry} uploadPicture={uploadEntryPicture}/>}
       </Container>
       <Fab color='primary' aria-label='add' sx={{ position: 'fixed', bottom: 60, right: 20 }} onClick={openNewDia}>
           <AddIcon />

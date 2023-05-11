@@ -11,6 +11,7 @@ export interface Task {
   claimed: string[]
   done: boolean
   private: boolean
+  image?: string
 }
 
 export function taskFromRecord(record: any): Task {
@@ -23,7 +24,8 @@ export function taskFromRecord(record: any): Task {
       claimed: record.claimed ?? [],
       done: record.done ?? false,
       username: record.username ?? '',
-      private: record.private ?? false
+      private: record.private ?? false,
+      image: record.image || undefined // the OR operator is intentional!!!
     }
   } else {
     return taskFromRecord({})

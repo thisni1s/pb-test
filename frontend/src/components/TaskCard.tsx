@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Card, Button, CardContent, Typography, Stack, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, Chip, DialogActions, ButtonGroup, Tooltip } from '@mui/material'
+import { Card, Button, CardContent, Typography, Stack, IconButton, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, Chip, DialogActions, ButtonGroup, Tooltip, Avatar } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2' // Grid version 2
 import { NumericFormat } from 'react-number-format'
 import { type Task } from '../models/Task'
@@ -10,6 +10,7 @@ import AddIcon from '@mui/icons-material/Add'
 import RemoveIcon from '@mui/icons-material/Remove'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 import { checkNum } from '../helpers'
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
@@ -34,6 +35,7 @@ interface ClaimProps {
 export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorName, deleteEntry, changeVisibility, claim, finish }: Props) {
   const [dialog, setDialog] = useState<boolean>(false)
   const [delDia, setDelDia] = useState<boolean>(false)
+  const [picDia, setPicDia] = useState<boolean>(false)
   const [duration, setDuration] = useState<number>(0)
   const [date, setDate] = useState<moment.Moment>(moment())
 
@@ -94,6 +96,11 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
           {
             task.creator === userid ? UserIsCreator() : <></>
           }
+          {
+            task.image !== undefined ?
+              <IconButton aria-label='picture' size='small' sx={{}} onClick={() => { setPicDia(true) }}><InsertPhotoIcon fontSize='small'/></IconButton>
+            : <></>
+          }
         </Stack>
     )
   }
@@ -104,6 +111,11 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
         <Typography color='text.secondary' variant='caption' gutterBottom>Erledigt von: {doneClaimNames?.join(', ')}</Typography>
         <Stack direction='row' spacing={2} sx={{ display: 'flex', mt: 1 }}>
           <Button disabled={fByMe} variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { setDialog(true) }}>Zeit nachtragen</Button>
+          {
+            task.image !== undefined ?
+              <IconButton aria-label='picture' size='small' sx={{}} onClick={() => { setPicDia(true) }}><InsertPhotoIcon fontSize='small'/></IconButton>
+            : <></>
+          }
         </Stack>
         </>
     )
@@ -130,6 +142,10 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
 
   function setChipTime(hours: number) {
     setDuration(hours * 60)
+  }
+
+  function getImage() {
+
   }
 
   return (
@@ -192,6 +208,13 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
               <DialogActions>
                 <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { handleDelete() }}>Löschen</Button>
                 <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { setDelDia(false) }}>Abbrechen</Button>
+              </DialogActions>
+            </Dialog>
+            <Dialog open={picDia} onClose={() => { setPicDia(false) }}>
+              <DialogTitle>Bild für {task.title} </DialogTitle>
+              {<Avatar variant='square' src={task.image} sx={{ width: 512, height: 512 }}/>}
+              <DialogActions>
+                <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { setPicDia(false) }}>Schließen</Button>
               </DialogActions>
             </Dialog>
           </CardContent>
