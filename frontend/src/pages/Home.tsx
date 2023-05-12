@@ -163,16 +163,6 @@ export default function Home() {
     }
   }
 
-  async function updateTask(task: Task) {
-    if (task.id !== undefined) {
-      try {
-        await pb.collection('tasks').update(task.id, task)
-      } catch (error) {
-        console.log(error)
-      }
-    }
-  }
-
   async function createWorkEntry(entry: WorkEntry): Promise<boolean> {
     try {
       const data = {
@@ -217,16 +207,29 @@ export default function Home() {
     return res
   }
 
-  async function changeVisibility(id: string) {
-    const task = tasks.find(el => el.id === id)
-    const userid = pb.authStore.model?.id ?? ''
-    if (task !== undefined && userid !== '') {
-      if(task.private) {
-        task.private = false
-      } else {
-        task.private = true
+  // async function changeVisibility(id: string) {
+  //   const task = tasks.find(el => el.id === id)
+  //   const userid = pb.authStore.model?.id ?? ''
+  //   if (task !== undefined && userid !== '') {
+  //     if(task.private) {
+  //       task.private = false
+  //     } else {
+  //       task.private = true
+  //     }
+  //     await updateTask(task)
+  //   }
+  // }
+
+  async function changeTask(taskid: string, body?: Object, formData?: FormData) {
+    try {
+      if(body !== undefined) {
+        await pb.collection('tasks').update(taskid, body)
       }
-      await updateTask(task)
+      if(formData !== undefined) {
+        await pb.collection('tasks').update(taskid, formData)
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
 
@@ -242,10 +245,10 @@ export default function Home() {
     return finished
       ? tasks.filter(task => (task.done && !task.private))
         .map(task => { return { task, doneBy: getDoneOrClaimed(task.claimed), finishedByMe: getFinishedByMe(task.id ?? ''), creatorName: getUNamesWrapper(task.creator) } })
-        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} changeVisibility={changeVisibility} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={task.creatorName} doneClaimNames={task.doneBy} fByMe={task.finishedByMe} /> })
+        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={task.creatorName} doneClaimNames={task.doneBy} fByMe={task.finishedByMe} changeTask={changeTask} /> })
       : tasks.filter(task => !task.done)
         .map(task => { return { task, claimedBy: getDoneOrClaimed(task.claimed) } })
-        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} changeVisibility={changeVisibility} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={getUNamesWrapper(task.task.creator)} doneClaimNames={task.claimedBy} /> })
+        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={getUNamesWrapper(task.task.creator)} doneClaimNames={task.claimedBy} changeTask={changeTask} /> })
   }
 
   async function createEntry(data: Task): Promise<Task> {
@@ -268,11 +271,8 @@ export default function Home() {
     }
   }
 
-
   function openNewDia() {
-    console.log('open new dia')
     newDia ? setNewDia(false) : setNewDia(true)
-    console.log('opened')
   }
 
   return (
