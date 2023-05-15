@@ -21,27 +21,21 @@ interface Props {
   doneClaimNames: string[]
   fByMe?: boolean
   creatorName: string
-  deleteEntry: (id: string) => void
-  changeTask: (taskid: string, body?: Object, formData?: FormData) => void
   claim: (id: string) => void
   finish: (id: string, duration: number, date: moment.Moment) => void
+  editTask: (id: string) => void
 }
 interface ClaimProps {
   single: boolean
 }
 
-export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorName, deleteEntry, changeTask, claim, finish }: Props) {
+export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorName, claim, finish, editTask }: Props) {
   const [dialog, setDialog] = useState<boolean>(false)
   const [delDia, setDelDia] = useState<boolean>(false)
   const [picDia, setPicDia] = useState<boolean>(false)
-  const [editDia, setEditDia] = useState<boolean>(false)
+  //const [editDia, setEditDia] = useState<boolean>(false)
   const [duration, setDuration] = useState<number>(0)
   const [date, setDate] = useState<moment.Moment>(moment())
-
-  function handleDelete() {
-    deleteEntry(task.id ?? '')
-    setDelDia(false)
-  }
 
   function handleFinish() {
     finish(task.id ?? '', duration, date)
@@ -81,7 +75,7 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
           <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { setDialog(true) }}><CheckIcon fontSize='small'/></Button>
           {
             task.creator === userid
-            ? <IconButton aria-label='delete' size='small' onClick={() => { setEditDia(true) }}><EditIcon fontSize='small'/></IconButton>
+            ? <IconButton aria-label='delete' size='small' onClick={() => { editTask(task.id ?? '') }}><EditIcon fontSize='small'/></IconButton>
             : <></> 
           }
         </Stack>
@@ -111,17 +105,17 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
     )
   }
 
-  function DeleteDia() {
-    return (
-      <Dialog open={delDia} onClose={() => { setDelDia(false) }}>
-        <DialogTitle>Delete {task.title} ?</DialogTitle>
-        <DialogActions>
-          <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { handleDelete() }}>Löschen</Button>
-          <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { setDelDia(false) }}>Abbrechen</Button>
-        </DialogActions>
-      </Dialog>
-    )
-  }
+  // function DeleteDia() {
+  //   return (
+  //     <Dialog open={delDia} onClose={() => { setDelDia(false) }}>
+  //       <DialogTitle>Delete {task.title} ?</DialogTitle>
+  //       <DialogActions>
+  //         <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { handleDelete() }}>Löschen</Button>
+  //         <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { setDelDia(false) }}>Abbrechen</Button>
+  //       </DialogActions>
+  //     </Dialog>
+  //   )
+  // }
 
   function FinishDia() {
     return (
@@ -213,7 +207,7 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
             {!task.done ? unfinishedTask() : finishedTask()}
             <FinishDia/>
             <ImageDia/>
-            <EditTask visible={editDia} task={task} setVisible={setEditDia} deleteTask={deleteEntry} editTask={changeTask}/>
+            {/*<EditTask visible={editDia} task={task} setVisible={setEditDia} deleteTask={deleteEntry} editTask={changeTask}/>*/}
           </CardContent>
         </Card>
       </Grid>

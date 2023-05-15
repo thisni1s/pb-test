@@ -16,6 +16,7 @@ import config from '../config.json'
 import AddIcon from '@mui/icons-material/Add'
 import { type WorkEntry, workEntryFromRecord } from '../models/WorkEntry'
 import { formatTime, getUsernameForUserid, sanitizeTime, arrayHasId, formatUploadTime, apiFinishTask, apiClaimTask } from '../helpers'
+import EditTask from '../components/EditTask'
 
 export default function Home() {
   const baseUrl = config.baseUrl
@@ -23,7 +24,9 @@ export default function Home() {
   const navigate = useNavigate()
   const [tasks, setTasks] = useState<Task[]>([])
   const [wEntries, setWEntries] = useState<WorkEntry[]>([])
+  const [editTask, setEditTask] = useState<Task>()
   const [newDia, setNewDia] = useState<boolean>(false)
+  const [editDia, setEditDia] = useState<boolean>(false)
   const [usernameDb, setUsernameDb] = useState<Map<string, string>>(new Map<string, string>())
 
   useEffect(() => {
@@ -36,6 +39,10 @@ export default function Home() {
     }
     void taskGet()
   }, [])
+
+  useEffect(() => {
+    console.log('edittask change: ', editTask)
+  }, [editTask])
 
   useEffect(() => {
     void pb.collection('tasks').subscribe('*', function (e: RecordSubscription<Record>) {
@@ -245,10 +252,10 @@ export default function Home() {
     return finished
       ? tasks.filter(task => (task.done && !task.private))
         .map(task => { return { task, doneBy: getDoneOrClaimed(task.claimed), finishedByMe: getFinishedByMe(task.id ?? ''), creatorName: getUNamesWrapper(task.creator) } })
-        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={task.creatorName} doneClaimNames={task.doneBy} fByMe={task.finishedByMe} changeTask={changeTask} /> })
+        .map(task => { return <TaskCard finish={finishTask} claim={claimTask} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={task.creatorName} doneClaimNames={task.doneBy} fByMe={task.finishedByMe} editTask={openEditTask} /> })
       : tasks.filter(task => !task.done)
         .map(task => { return { task, claimedBy: getDoneOrClaimed(task.claimed) } })
-        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={getUNamesWrapper(task.task.creator)} doneClaimNames={task.claimedBy} changeTask={changeTask} /> })
+        .map(task => { return <TaskCard finish={finishTask} claim={claimTask} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={getUNamesWrapper(task.task.creator)} doneClaimNames={task.claimedBy} editTask={openEditTask} /> })
   }
 
   async function createEntry(data: Task): Promise<Task> {
@@ -275,6 +282,16 @@ export default function Home() {
     newDia ? setNewDia(false) : setNewDia(true)
   }
 
+  function openEditTask(id: string) {
+    console.log('edit task: ', id)
+    const toChange = tasks.filter(task => task.id === id)[0]
+    console.log(toChange)
+    if (toChange !== undefined) {
+      setEditTask(toChange)
+      setEditDia(true)
+    }
+  }
+
   return (
     <>
       <TopBar username={pb.authStore.model?.username as string ?? 'X'} logout={handleLogout}/>
@@ -294,7 +311,12 @@ export default function Home() {
             {getTaskCards(true)}
           </Grid>
         </Stack>
-        {<NewTask userid={pb.authStore.model?.id ?? ''} visible={newDia} setVisible={setNewDia} createEntry={createEntry} createWorkEntry={createWorkEntry} uploadPicture={uploadEntryPicture}/>}
+        <NewTask userid={pb.authStore.model?.id ?? ''} visible={newDia} setVisible={setNewDia} createEntry={createEntry} createWorkEntry={createWorkEntry} uploadPicture={uploadEntryPicture}/>
+        {
+          editTask !== undefined
+          ? <EditTask visible={editDia} task={editTask} setVisible={setEditDia} editTask={changeTask} deleteTask={deleteEntry}/>
+          : <></>
+        }
       </Container>
       <Fab color='primary' aria-label='add' sx={{ position: 'fixed', bottom: 60, right: 20 }} onClick={openNewDia}>
           <AddIcon />

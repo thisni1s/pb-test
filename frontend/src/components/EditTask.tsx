@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Dialog, AppBar, Toolbar, IconButton, Typography, Button, Stack, TextField, Switch } from '@mui/material'
 import { type Task } from '../models/Task'
 import CloseIcon from '@mui/icons-material/Close'
@@ -26,6 +26,13 @@ export default function EditTask({ visible, task, setVisible, editTask, deleteTa
   const [blob, setBlob] = useState<File | undefined>(undefined)
   const [pic, setPic] = useState<string | undefined>(task.image)
   const pickerRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setTitle(task.title)
+    setDiscription(task.description)
+    setPriv(task.private)
+    setPic(task.image)
+  }, [task])
 
   async function handleClose (operation: Operations) {
     switch (operation) {
