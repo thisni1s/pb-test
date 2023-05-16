@@ -16,6 +16,7 @@ import config from '../config.json'
 import AddIcon from '@mui/icons-material/Add'
 import { type WorkEntry, workEntryFromRecord } from '../models/WorkEntry'
 import { formatTime, getUsernameForUserid, sanitizeTime, arrayHasId, formatUploadTime, apiFinishTask, apiClaimTask } from '../helpers'
+import EditTask from '../components/EditTask'
 
 export default function Home() {
   const baseUrl = config.baseUrl
@@ -23,7 +24,9 @@ export default function Home() {
   const navigate = useNavigate()
   const [tasks, setTasks] = useState<Task[]>([])
   const [wEntries, setWEntries] = useState<WorkEntry[]>([])
+  const [editTask, setEditTask] = useState<Task>()
   const [newDia, setNewDia] = useState<boolean>(false)
+  const [editDia, setEditDia] = useState<boolean>(false)
   const [usernameDb, setUsernameDb] = useState<Map<string, string>>(new Map<string, string>())
 
   useEffect(() => {
@@ -56,7 +59,6 @@ export default function Home() {
       Object.keys(data.usernames).forEach(key => {
         db.set(key, data.usernames[key])
       })
-      console.log('usernamedb: ', db)
       setUsernameDb(old => {
         db.forEach(function(value, key) {
           if (!old.has(key)) {
@@ -79,7 +81,8 @@ export default function Home() {
       taskList = taskList.map(task => {
         return {
           ...task,
-          username: getUNamesWrapper(task.creator)
+          username: getUNamesWrapper(task.creator),
+          image: task.image !== '' ? pb.getFileUrl(task, task.image, {'thumb': '512x512'}) : ''
         }
       })
       setTasks(taskList.map(task => taskFromRecord(task)))
@@ -103,9 +106,8 @@ export default function Home() {
   }
 
   function handleEvent(event: RecordSubscription<Record>) {
-    const changedTask = taskFromRecord({ ...event.record, username: getUNamesWrapper(event.record.creator ?? '') })
+    const changedTask = taskFromRecord({ ...event.record, username: getUNamesWrapper(event.record.creator ?? ''), image: event.record.image !== '' ? pb.getFileUrl(event.record, event.record.image, {'thumb': '512x512'}) : '' })
     if (!(changedTask.private === true && changedTask.creator !== pb.authStore.model?.id)) {
-      console.log('i am listening, ', event)
       setTasks(prevstate => {
         switch (event.action) {
           case 'create':
@@ -161,16 +163,6 @@ export default function Home() {
     }
   }
 
-  async function updateTask(task: Task) {
-    if (task.id !== undefined) {
-      try {
-        await pb.collection('tasks').update(task.id, task)
-      } catch (error) {
-        console.log(error)
-      }
-    }
-  }
-
   async function createWorkEntry(entry: WorkEntry): Promise<boolean> {
     try {
       const data = {
@@ -215,16 +207,29 @@ export default function Home() {
     return res
   }
 
-  async function changeVisibility(id: string) {
-    const task = tasks.find(el => el.id === id)
-    const userid = pb.authStore.model?.id ?? ''
-    if (task !== undefined && userid !== '') {
-      if(task.private) {
-        task.private = false
-      } else {
-        task.private = true
+  // async function changeVisibility(id: string) {
+  //   const task = tasks.find(el => el.id === id)
+  //   const userid = pb.authStore.model?.id ?? ''
+  //   if (task !== undefined && userid !== '') {
+  //     if(task.private) {
+  //       task.private = false
+  //     } else {
+  //       task.private = true
+  //     }
+  //     await updateTask(task)
+  //   }
+  // }
+
+  async function changeTask(taskid: string, body?: Object, formData?: FormData) {
+    try {
+      if(body !== undefined) {
+        await pb.collection('tasks').update(taskid, body)
       }
-      await updateTask(task)
+      if(formData !== undefined) {
+        await pb.collection('tasks').update(taskid, formData)
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
 
@@ -240,10 +245,10 @@ export default function Home() {
     return finished
       ? tasks.filter(task => (task.done && !task.private))
         .map(task => { return { task, doneBy: getDoneOrClaimed(task.claimed), finishedByMe: getFinishedByMe(task.id ?? ''), creatorName: getUNamesWrapper(task.creator) } })
-        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} changeVisibility={changeVisibility} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={task.creatorName} doneClaimNames={task.doneBy} fByMe={task.finishedByMe}/> })
+        .map(task => { return <TaskCard finish={finishTask} claim={claimTask} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={task.creatorName} doneClaimNames={task.doneBy} fByMe={task.finishedByMe} editTask={openEditTask} /> })
       : tasks.filter(task => !task.done)
         .map(task => { return { task, claimedBy: getDoneOrClaimed(task.claimed) } })
-        .map(task => { return <TaskCard deleteEntry={deleteEntry} finish={finishTask} claim={claimTask} changeVisibility={changeVisibility} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={getUNamesWrapper(task.task.creator)} doneClaimNames={task.claimedBy}/> })
+        .map(task => { return <TaskCard finish={finishTask} claim={claimTask} key={task.task.id ?? ''} task={task.task} userid={pb.authStore.model?.id ?? ''} creatorName={getUNamesWrapper(task.task.creator)} doneClaimNames={task.claimedBy} editTask={openEditTask} /> })
   }
 
   async function createEntry(data: Task): Promise<Task> {
@@ -256,10 +261,26 @@ export default function Home() {
     }
   }
 
+  async function uploadEntryPicture(taskid: string, picture: Blob) {
+    try {
+      const formData = new FormData()
+      formData.append('image', picture)
+      await pb.collection('tasks').update(taskid, formData);
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   function openNewDia() {
-    console.log('open new dia')
     newDia ? setNewDia(false) : setNewDia(true)
-    console.log('opened')
+  }
+
+  function openEditTask(id: string) {
+    const toChange = tasks.filter(task => task.id === id)[0]
+    if (toChange !== undefined) {
+      setEditTask(toChange)
+      setEditDia(true)
+    }
   }
 
   return (
@@ -281,7 +302,12 @@ export default function Home() {
             {getTaskCards(true)}
           </Grid>
         </Stack>
-        {<NewTask userid={pb.authStore.model?.id ?? ''} visible={newDia} setVisible={setNewDia} createEntry={createEntry} createWorkEntry={createWorkEntry}/>}
+        <NewTask userid={pb.authStore.model?.id ?? ''} visible={newDia} setVisible={setNewDia} createEntry={createEntry} createWorkEntry={createWorkEntry} uploadPicture={uploadEntryPicture}/>
+        {
+          editTask !== undefined
+          ? <EditTask visible={editDia} task={editTask} setVisible={setEditDia} editTask={changeTask} deleteTask={deleteEntry}/>
+          : <></>
+        }
       </Container>
       <Fab color='primary' aria-label='add' sx={{ position: 'fixed', bottom: 60, right: 20 }} onClick={openNewDia}>
           <AddIcon />

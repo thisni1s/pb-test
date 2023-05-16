@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
-import { Dialog, AppBar, Toolbar, IconButton, Typography, Button, Stack, TextField, Switch, Chip } from '@mui/material'
+import React, { useRef, useState } from 'react'
+import { Dialog, AppBar, Toolbar, IconButton, Typography, Button, Stack, TextField, Switch, Chip, Avatar, Input } from '@mui/material'
 import { taskFromRecord, type Task } from '../models/Task'
 import CloseIcon from '@mui/icons-material/Close'
+import ClearIcon from '@mui/icons-material/Clear';
 import { type WorkEntry } from '../models/WorkEntry'
 import { NumericFormat } from 'react-number-format'
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
@@ -9,6 +10,7 @@ import 'moment/locale/de';
 import moment from 'moment'
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { checkNum, formatUploadTime } from '../helpers'
+import { Camera, CameraResultType, CameraSource, Photo } from '@capacitor/camera';
 
 interface Props {
   userid: string
@@ -16,9 +18,10 @@ interface Props {
   setVisible: (state: boolean) => void
   createEntry: (data: Task) => Promise<Task>
   createWorkEntry: (data: WorkEntry) => Promise<boolean>
+  uploadPicture: (taskid: string, picture: Blob) => void
 }
 
-export default function NewTask({ userid, visible, setVisible, createEntry, createWorkEntry }: Props) {
+export default function NewTask({ userid, visible, setVisible, createEntry, createWorkEntry, uploadPicture }: Props) {
   const [title, setTitle] = useState<string>('')
   const [description, setDiscription] = useState<string>('')
   const [spendMin, setSpendMin] = useState<number>(0)
@@ -26,6 +29,8 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
   const [claim, setClaim] = useState<boolean>(false)
   const [priv, setPriv] = useState<boolean>(false)
   const [date, setDate] = useState<moment.Moment>(moment())
+  const [blob, setBlob] = useState<File>()
+  const pickerRef = useRef<HTMLInputElement>(null)
 
   async function handleClose (save: boolean) {
     console.log('close!!!', save)
@@ -43,6 +48,9 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
           private: priv,          
         })
         const task = await createEntry(data)
+        if (blob !== undefined) {
+          uploadPicture(task.id ?? '', blob)
+        }
         if (task.id !== '' && task !== undefined && done) {
           await createWorkEntry({ user: userid, task: task.id ?? '', minutes: spendMin, date: formatUploadTime(date) })
         }
@@ -67,6 +75,7 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
     setClaim(false)
     setPriv(false)
     setDate(moment())
+    setBlob(undefined)
   }
 
   function dateChange(time: moment.Moment | null) {
@@ -77,6 +86,22 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
 
   function setChipTime(hours: number) {
     setSpendMin(hours * 60)
+  }
+
+  function clickRef() {
+    pickerRef.current?.click();
+  }
+
+  async function readFile() {
+    const inFile: HTMLInputElement | null = pickerRef.current
+    if (inFile !== null && inFile.files !== null) {
+      const blob = inFile.files[0] ?? null
+      setBlob(blob)
+    }
+  }
+
+  function clearBlob() {
+    setBlob(undefined)
   }
 
   return (
@@ -114,7 +139,7 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
             value={description}
             onChange={(e) => { setDiscription(e.target.value) }}
           />
-          <Stack direction='row' sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <Stack direction='row' sx={stackSx}>
             <Typography sx={{ flexGrow: 1 }}>Private Aufgabe</Typography>
             <Switch
               checked={priv}
@@ -122,7 +147,7 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
               inputProps={{ 'aria-label': 'controlled' }}
             />
           </Stack>
-          <Stack direction='row' sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <Stack direction='row' sx={stackSx}>
             <Typography sx={{ flexGrow: 1 }}>Aufgabe ist bereits Erledigt</Typography>
             <Switch
               checked={done}
@@ -158,7 +183,7 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
                 </LocalizationProvider>
               </>
               : 
-              <Stack direction='row' sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Stack direction='row' sx={stackSx}>
                 <Typography sx={{ flexGrow: 1 }}>Aufgabe für mich vormerken?</Typography>
                 <Switch
                   checked={claim}
@@ -167,7 +192,29 @@ export default function NewTask({ userid, visible, setVisible, createEntry, crea
                 />
               </Stack>
           }
+          <Stack direction='row' sx={stackSx}>
+            <Typography sx={{ flexGrow: 1 }}>Bild hinzufügen?</Typography>
+            <Button variant="contained" color="primary" onClick={clickRef}> Auswählen
+              <input ref={pickerRef} type="file" style={{ display: 'none' }} accept='image/*' onChange={readFile}/>
+            </Button>
+            {
+              blob !== undefined ?
+              <IconButton color='primary' aria-label="upload picture" component="label" onClick={clearBlob}><ClearIcon/></IconButton>
+              : <></>
+            }
+          </Stack>
+          {
+            blob !== undefined ?
+              <img src={URL.createObjectURL(blob)} alt='hallo'/>
+            : <></>            
+          }
         </Stack>
       </Dialog>
   )
+}
+
+const stackSx = { 
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center'
 }
