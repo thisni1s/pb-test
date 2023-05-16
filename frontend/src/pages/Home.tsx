@@ -41,10 +41,6 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    console.log('edittask change: ', editTask)
-  }, [editTask])
-
-  useEffect(() => {
     void pb.collection('tasks').subscribe('*', function (e: RecordSubscription<Record>) {
       handleEvent(e)
     })
@@ -63,7 +59,6 @@ export default function Home() {
       Object.keys(data.usernames).forEach(key => {
         db.set(key, data.usernames[key])
       })
-      console.log('usernamedb: ', db)
       setUsernameDb(old => {
         db.forEach(function(value, key) {
           if (!old.has(key)) {
@@ -90,7 +85,6 @@ export default function Home() {
           image: task.image !== '' ? pb.getFileUrl(task, task.image, {'thumb': '512x512'}) : ''
         }
       })
-      console.log(taskList)
       setTasks(taskList.map(task => taskFromRecord(task)))
     } catch (error) {
       console.log(error)
@@ -114,7 +108,6 @@ export default function Home() {
   function handleEvent(event: RecordSubscription<Record>) {
     const changedTask = taskFromRecord({ ...event.record, username: getUNamesWrapper(event.record.creator ?? ''), image: event.record.image !== '' ? pb.getFileUrl(event.record, event.record.image, {'thumb': '512x512'}) : '' })
     if (!(changedTask.private === true && changedTask.creator !== pb.authStore.model?.id)) {
-      console.log('i am listening, ', event)
       setTasks(prevstate => {
         switch (event.action) {
           case 'create':
@@ -283,9 +276,7 @@ export default function Home() {
   }
 
   function openEditTask(id: string) {
-    console.log('edit task: ', id)
     const toChange = tasks.filter(task => task.id === id)[0]
-    console.log(toChange)
     if (toChange !== undefined) {
       setEditTask(toChange)
       setEditDia(true)

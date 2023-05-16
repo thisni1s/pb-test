@@ -31,7 +31,6 @@ interface ClaimProps {
 
 export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorName, claim, finish, editTask }: Props) {
   const [dialog, setDialog] = useState<boolean>(false)
-  const [delDia, setDelDia] = useState<boolean>(false)
   const [picDia, setPicDia] = useState<boolean>(false)
   //const [editDia, setEditDia] = useState<boolean>(false)
   const [duration, setDuration] = useState<number>(0)

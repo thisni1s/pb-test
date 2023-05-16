@@ -102,6 +102,7 @@ export default function EditTask({ visible, task, setVisible, editTask, deleteTa
       setTitle(task.title)
       setDiscription(task.description)
       setPriv(task.private)
+      setPic(task.image)
     }
     setBlob(undefined)
   }
