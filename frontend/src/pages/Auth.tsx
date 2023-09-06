@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import PocketBase from 'pocketbase'
+import PocketBase, { ClientResponseError } from 'pocketbase'
 
 import Avatar from '@mui/material/Avatar'
 import Button from '@mui/material/Button'
@@ -11,6 +11,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined'
 import Typography from '@mui/material/Typography'
 import Container from '@mui/material/Container'
 import config from '../config.json'
+import { getGermanErrorNames } from '../helpers'
 
 function Auth() {
   const [email, setEmail] = useState<string>('')
@@ -22,7 +23,7 @@ function Auth() {
   const navigate = useNavigate()
 
   async function login(username: string, password: string) {
-    if (username.length > 0 && password.length > 0) {
+    if (username.length > 0 && password.length > 7) {
       setLoading(true)
       console.log(pb.authStore)
       try {
@@ -30,17 +31,18 @@ function Auth() {
         console.log('hello')
         navigate('/home')
       } catch (err) {
-        console.log(err)
-        alert('Someting went wrong while logging in')
+        const e = err as ClientResponseError
+        console.log(e.data)
+        alert(getGermanErrorNames(e.data.message))
       }
       setLoading(false)
     } else {
-      alert('Nutzername und Passwort sind Pflichtfelder!')
+      alert('Nutzername und Passwort sind Pflichtfelder! Das Passwort muss mindestens 8 Zeichen haben!')
     }
   }
 
   async function signup(username: string, password: string) {
-    if (username.length > 0 && password.length > 0) {
+    if (username.length > 0 && password.length > 7) {
       setLoading(true)
       const data = {
         username,
@@ -52,11 +54,16 @@ function Auth() {
         const row = await pb.collection('users').create(data)
         await login(username, password)
       } catch (err) {
-        console.log(err)
-        alert('Something went wrong while registering')
+        const e = err as ClientResponseError
+        let text = 'Something went wrong while registering' 
+        console.log(e.data.data)
+        for(const key in e.data.data) {
+          text = getGermanErrorNames(e.data.data[key].message)
+        }
+        alert(text)
       }
     } else {
-      alert('Nutzername und Passwort sind Pflichtfelder!')
+      alert('Nutzername und Passwort sind Pflichtfelder! Das Passwort muss mindestens 8 Zeichen haben!')
     }
   }
 
