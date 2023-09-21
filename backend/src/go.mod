@@ -3,8 +3,8 @@ module testpb
 go 1.18
 
 require (
-	github.com/labstack/echo/v5 v5.0.0-20220201181537-ed2888cfa198
-	github.com/pocketbase/pocketbase v0.12.2
+	github.com/labstack/echo/v5 v5.0.0-20230722203903-ec5b858dab61
+	github.com/pocketbase/pocketbase v0.18.6
 )
 
 require (
