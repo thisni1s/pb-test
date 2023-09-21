@@ -33,10 +33,7 @@ interface ClaimProps {
 export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorName, claim, finish, editTask }: Props) {
   const [dialog, setDialog] = useState<boolean>(false)
   const [picDia, setPicDia] = useState<boolean>(false)
-  const [duration, setDuration] = useState<number>(0)
-  const [date, setDate] = useState<moment.Moment>(moment())
-
-  function handleFinish() {
+  function handleFinish(duration: number, date: moment.Moment) {
     finish(task.id ?? '', duration, date)
     setDialog(false)
   }
@@ -105,6 +102,19 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
   }
 
   function FinishDia() {
+    const [duration, setDuration] = useState<number>(0)
+    const [date, setDate] = useState<moment.Moment>(moment())
+
+    function setChipTime(hours: number) {
+      setDuration(hours * 60)
+    }
+
+    function dateChange(time: moment.Moment | null) {
+      if (time !== null) {
+        setDate(time)
+      }
+    }
+
     return (
       <Dialog open={dialog} onClose={() => { setDialog(false) }}>
       <DialogTitle>
@@ -140,7 +150,7 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
         </Stack>
         <DialogActions sx={{mt: 1}}>
           <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { setDialog(false) }}>Abbrechen</Button>
-          <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={handleFinish}>Speichern</Button>
+          <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => handleFinish(duration, date)}>Speichern</Button>
         </DialogActions>
       </DialogContent>
       </Dialog>
@@ -158,16 +168,6 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
         </Typography>
       )
     }
-  }
-
-  function dateChange(time: moment.Moment | null) {
-    if (time !== null) {
-      setDate(time)
-    }
-  }
-
-  function setChipTime(hours: number) {
-    setDuration(hours * 60)
   }
 
   return (

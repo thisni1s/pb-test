@@ -56,3 +56,14 @@ export function checkNum (num: number): boolean {
 export function arrayHasId (arr: any[], obj: any): boolean {
   return arr.find(el => el.id === obj.id) !== undefined
 }
+
+export function getGermanErrorNames(str: string): string {
+  switch (str) {
+    case "Failed to authenticate.":
+      return "Falscher Nutzername oder falsches Passwort!"
+    case "The username is invalid or already in use.":
+      return "Der Nutzername ist ungültig oder schon vergeben!"
+    default:
+      return str;
+  }
+}
