@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Card, CardContent, Typography, Button, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, CardActions, Stack, Chip } from '@mui/material'
+import { Card, CardContent, CardMedia, Typography, Button, Dialog, DialogTitle, DialogContent, DialogContentText, TextField, DialogActions, CardActions, Stack, Chip } from '@mui/material'
 import Grid from '@mui/material/Unstable_Grid2' // Grid version 2
 import { type Task } from '../models/Task'
 import { NumericFormat } from 'react-number-format'
@@ -9,6 +9,7 @@ import { parseUploadTime, readableTime, sanitizeTime } from '../helpers'
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
 import moment from 'moment'
+import PicDialog from './PicDialog'
 
 interface Props {
   task: Task
@@ -20,6 +21,7 @@ interface Props {
 export default function HistoryCard({ task, workEntry, deleteEntry, changeTime }: Props) {
   const [dialog, setDialog] = useState<boolean>(false)
   const [timeDialog, setTimeDialog] = useState<boolean>(false)
+  const [picDia, setPicDia] = useState<boolean>(false)
   const [duration, setDuration] = useState(workEntry.minutes)
   const [date, setDate] = useState<moment.Moment>(parseUploadTime(workEntry.date))
 
@@ -101,6 +103,14 @@ export default function HistoryCard({ task, workEntry, deleteEntry, changeTime }
   return (
       <Grid xs={12} md={4}>
         <Card>
+          {
+            task.image !== '' ?
+              <>
+              <CardMedia sx={{height: 140}} image={task.image} component='img' onClick={() => setPicDia(true)}/>
+              <PicDialog visible={picDia} image={task.image} title={task.title} changeVisibility={setPicDia} />
+              </>  
+            : <></>
+          }          
           <CardContent>
             <Typography variant='h5'>
               {task.title}
@@ -120,7 +130,7 @@ export default function HistoryCard({ task, workEntry, deleteEntry, changeTime }
             <Button size="small" onClick={() => { setTimeDialog(true) }}>Bearbeiten</Button>
           </CardActions>
              {delDia()}
-             {changeDia()}
+             {changeDia()}             
         </Card>
       </Grid>
   )

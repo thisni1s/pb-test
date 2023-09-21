@@ -1,5 +1,5 @@
 import React, { useState, type MouseEvent, useContext } from 'react'
-import { AppBar, Toolbar, Typography, IconButton, Avatar, Tooltip, Menu, MenuItem, useTheme, Dialog, Button, DialogActions, DialogContent, DialogTitle, TextField, Stack } from '@mui/material'
+import { AppBar, Toolbar, Typography, IconButton, Avatar, Tooltip, Menu, MenuItem, useTheme, Dialog, Button, DialogActions, DialogContent, DialogTitle, TextField, Stack, Link } from '@mui/material'
 import { ThemeContext, ChPassContext } from '../App'
 import config from '../config.json'
 
@@ -111,9 +111,8 @@ export default function TopBar({ username, logout }: Props) {
         <DialogContent>
         <Stack spacing={1}>
           <Typography>Version {config.version}</Typography>
-          <Typography>Quelltext hier: https://github.com/thisni1s/zeitfinder</Typography>
-          <Typography>Fehler hier melden: https://github.com/thisni1s/zeitfinder/issues</Typography>
-
+          <Link href="https://github.com/thisni1s/zeitfinder" underline='none' color='inherit'>Quelltext hier: https://github.com/thisni1s/zeitfinder</Link>
+          <Link href="https://github.com/thisni1s/zeitfinder/issues" underline='none' color='inherit'>Fehler hier melden: https://github.com/thisni1s/zeitfinder/issues</Link>
         </Stack>
         </DialogContent>
         <DialogActions>

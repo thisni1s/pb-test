@@ -43,11 +43,18 @@ export default function History() {
         expand: 'task',
         sort: '-updated'
       })
-      const list: WTask[] = historyList.map(record => [taskFromRecord(record.expand.task), workEntryFromRecord(record)])
+      const list: WTask[] = historyList.map(record => [getTaskWithImage(record.expand.task), workEntryFromRecord(record)])
       setHistory(list)
     } catch (error) {
       console.log(error)
     }
+  }
+
+  function getTaskWithImage(task: any): Task {
+    return {
+      ...taskFromRecord(task),
+      image: task.image !== '' ? pb.getFileUrl(task, task.image, {'thumb': '512x512'}) : ''
+    } as Task
   }
 
   async function deleteEntry(id: string) {
@@ -85,6 +92,7 @@ export default function History() {
       alert('Update fehlgeschlagen!')
     }
   }
+
 
   function getHistory() {
     return history

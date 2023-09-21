@@ -14,6 +14,7 @@ import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
 import moment from 'moment'
 import 'moment/locale/de';
 import EditTask from './EditTask'
+import PicDialog from './PicDialog'
 
 interface Props {
   userid: string
@@ -32,7 +33,6 @@ interface ClaimProps {
 export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorName, claim, finish, editTask }: Props) {
   const [dialog, setDialog] = useState<boolean>(false)
   const [picDia, setPicDia] = useState<boolean>(false)
-  //const [editDia, setEditDia] = useState<boolean>(false)
   const [duration, setDuration] = useState<number>(0)
   const [date, setDate] = useState<moment.Moment>(moment())
 
@@ -103,18 +103,6 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
       </Dialog>
     )
   }
-
-  // function DeleteDia() {
-  //   return (
-  //     <Dialog open={delDia} onClose={() => { setDelDia(false) }}>
-  //       <DialogTitle>Delete {task.title} ?</DialogTitle>
-  //       <DialogActions>
-  //         <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { handleDelete() }}>Löschen</Button>
-  //         <Button variant='outlined' size='small' sx={{ flexGrow: 1 }} onClick={() => { setDelDia(false) }}>Abbrechen</Button>
-  //       </DialogActions>
-  //     </Dialog>
-  //   )
-  // }
 
   function FinishDia() {
     return (
@@ -187,7 +175,10 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
         <Card>
           {
             task.image !== undefined ?
+            <>
               <CardMedia sx={{height: 140}} image={task.image} component='img' onClick={() => setPicDia(true)}/>
+              <PicDialog visible={picDia} image={task.image} title={task.title} changeVisibility={setPicDia} />
+            </>
             : <></>
           }
           <CardContent>
@@ -205,8 +196,6 @@ export default function TaskCard({ userid, task, doneClaimNames, fByMe, creatorN
             </Stack>
             {!task.done ? unfinishedTask() : finishedTask()}
             <FinishDia/>
-            <ImageDia/>
-            {/*<EditTask visible={editDia} task={task} setVisible={setEditDia} deleteTask={deleteEntry} editTask={changeTask}/>*/}
           </CardContent>
         </Card>
       </Grid>
