@@ -50,6 +50,7 @@ func main() {
 			"items":      e.Result.Items,
 			"usernames":  idNameList,
 		}
+		apis.EnrichRecords(e.HttpContext, app.Dao(), e.Records)
 		e.HttpContext.JSON(http.StatusOK, data)
 		return hook.StopPropagation
 	})
@@ -73,7 +74,7 @@ func main() {
 			"items":      e.Result.Items,
 			"usernames":  idNameList,
 		}
-		apis.EnrichRecords(e.HttpContext, app.Dao(), e.Result.Items.([]*models.Record))
+		apis.EnrichRecords(e.HttpContext, app.Dao(), e.Records)
 		e.HttpContext.JSON(http.StatusOK, data)
 		return hook.StopPropagation
 	})
